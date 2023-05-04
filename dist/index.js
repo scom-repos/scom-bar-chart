@@ -64,7 +64,7 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports"], function 
         }
         const currencySymbol = format.indexOf('$') !== -1 ? '$' : '';
         const roundedNum = exports.formatNumberWithSeparators(num, decimalPlaces);
-        if (separators || !(format.includes('m') || format.includes('ma'))) {
+        if (separators || !(format.includes('m') || format.includes('a'))) {
             return format.indexOf('$') === 0 ? `${currencySymbol}${roundedNum}` : `${roundedNum}${currencySymbol}`;
         }
         const parts = roundedNum.split('.');
