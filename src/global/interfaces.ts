@@ -25,7 +25,11 @@ export interface IBarChartOptions {
       labelFormat?: string,
       position?: 'left' | 'right'
     },
-    legend?: boolean,
+    legend?: {
+      show?: boolean,
+      scroll?: boolean,
+      position?: 'top' | 'bottom' | 'left' | 'right'
+    },
     showDataLabels?: boolean,
     percentage?: boolean
   }
