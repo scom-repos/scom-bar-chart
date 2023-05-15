@@ -1,6 +1,6 @@
 export default {
   defaultBuilderData: {
-    apiEndpoint: 'https://api.dune.com/api/v1/query/2360815/results?api_key=324WhvsCHWCji2pkgtfa0JDqDu8j0FdD',
+    apiEndpoint: "/dune/query/2360815",
     options: {
       title: 'ETH Withdrawals after Shanghai Unlock',
       options: {
