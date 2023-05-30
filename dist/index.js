@@ -541,7 +541,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             if (advancedSchema) {
                 const advanced = {
                     name: 'Advanced',
-                    icon: 'cog',
+                    icon: 'sliders-h',
                     command: (builder, userInputData) => {
                         let _oldData = {};
                         return {

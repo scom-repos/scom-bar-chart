@@ -354,7 +354,7 @@ export default class ScomBarChart extends Module {
     if (advancedSchema) {
       const advanced = {
         name: 'Advanced',
-        icon: 'cog',
+        icon: 'sliders-h',
         command: (builder: any, userInputData: any) => {
           let _oldData: IBarChartOptions = {};
           return {
