@@ -13,12 +13,120 @@ import {
   BarChart,
   moment
 } from '@ijstech/components';
-import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat } from './global/index';
+import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions } from './global/index';
 import { chartStyle, containerStyle } from './index.css';
 import assets from './assets';
 import configData from './data.json';
 const Theme = Styles.Theme.ThemeVars;
 
+const options = {
+  type: 'object',
+  properties: {
+    xColumn: {
+      type: 'object',
+      title: 'X column',
+      required: true,
+      properties: {
+        key: {
+          type: 'string',
+          required: true
+        },
+        type: {
+          type: 'string',
+          enum: ['time', 'category'],
+          required: true
+        }
+      }
+    },
+    yColumns: {
+      type: 'array',
+      title: 'Y columns',
+      required: true,
+      items: {
+        type: 'string'
+      }
+    },
+    groupBy: {
+      type: 'string'
+    },
+    stacking: {
+      type: 'boolean'
+    },
+    legend: {
+      type: 'object',
+      title: 'Show Chart Legend',
+      properties: {
+        show: {
+          type: 'boolean'
+        },
+        scroll: {
+          type: 'boolean'
+        },
+        position: {
+          type: 'string',
+          enum: ['top', 'bottom', 'left', 'right']
+        }
+      }
+    },
+    showDataLabels: {
+      type: 'boolean'
+    },
+    percentage: {
+      type: 'boolean'
+    },
+    xAxis: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string'
+        },
+        tickFormat: {
+          type: 'string'
+        },
+        reverseValues: {
+          type: 'boolean'
+        }
+      }
+    },
+    yAxis: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string'
+        },
+        tickFormat: {
+          type: 'string'
+        },
+        labelFormat: {
+          type: 'string'
+        },
+        position: {
+          type: 'string',
+          enum: ['left', 'right']
+        }
+      }
+    },
+    seriesOptions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          key: {
+            type: 'string',
+            required: true
+          },
+          title: {
+            type: 'string'
+          },
+          color: {
+            type: 'string',
+            format: 'color'
+          }
+        }
+      }
+    }
+  }
+}
 interface ScomBarChartElement extends ControlElement {
   data: IBarChartConfig
 }
@@ -43,7 +151,7 @@ export default class ScomBarChart extends Module {
   private chartData: { [key: string]: string | number }[] = [];
   private apiEndpoint = '';
 
-  private _data: IBarChartConfig = { apiEndpoint: '', options: undefined };
+  private _data: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -85,31 +193,7 @@ export default class ScomBarChart extends Module {
     this.onUpdateBlock();
   }
 
-  // getConfigSchema() {
-  //   return this.getThemeSchema();
-  // }
-
-  // onConfigSave(config: any) {
-  //   this.tag = config;
-  //   this.onUpdateBlock();
-  // }
-
-  // async edit() {
-  //   // this.chartContainer.visible = false
-  // }
-
-  // async confirm() {
-  //   this.onUpdateBlock();
-  //   // this.chartContainer.visible = true
-  // }
-
-  // async discard() {
-  //   // this.chartContainer.visible = true
-  // }
-
-  // async config() { }
-
-  private getPropertiesSchema(readOnly?: boolean) {
+  private getPropertiesSchema() {
     const propertiesSchema = {
       type: 'object',
       properties: {
@@ -118,132 +202,49 @@ export default class ScomBarChart extends Module {
           title: 'API Endpoint',
           required: true
         },
-        options: {
-          type: 'object',
-          properties: {
-            title: {
-              type: 'string',
-              required: true
-            },
-            description: {
-              type: 'string'
-            },
-            options: {
-              type: 'object',
-              properties: {
-                xColumn: {
-                  type: 'object',
-                  title: 'X column',
-                  required: true,
-                  properties: {
-                    key: {
-                      type: 'string',
-                      required: true
-                    },
-                    type: {
-                      type: 'string',
-                      enum: ['time', 'category'],
-                      required: true
-                    }
-                  }
-                },
-                yColumns: {
-                  type: 'array',
-                  title: 'Y columns',
-                  required: true,
-                  items: {
-                    type: 'string'
-                  }
-                },
-                groupBy: {
-                  type: 'string'
-                },
-                stacking: {
-                  type: 'boolean'
-                },
-                legend: {
-                  type: 'object',
-                  title: 'Show Chart Legend',
-                  properties: {
-                    show: {
-                      type: 'boolean'
-                    },
-                    scroll: {
-                      type: 'boolean'
-                    },
-                    position: {
-                      type: 'string',
-                      enum: ['top', 'bottom', 'left', 'right']
-                    }
-                  }
-                },
-                showDataLabels: {
-                  type: 'boolean'
-                },
-                percentage: {
-                  type: 'boolean'
-                },
-                xAxis: {
-                  type: 'object',
-                  properties: {
-                    title: {
-                      type: 'string'
-                    },
-                    tickFormat: {
-                      type: 'string'
-                    },
-                    reverseValues: {
-                      type: 'boolean'
-                    }
-                  }
-                },
-                yAxis: {
-                  type: 'object',
-                  properties: {
-                    title: {
-                      type: 'string'
-                    },
-                    tickFormat: {
-                      type: 'string'
-                    },
-                    labelFormat: {
-                      type: 'string'
-                    },
-                    position: {
-                      type: 'string',
-                      enum: ['left', 'right']
-                    }
-                  }
-                },
-                seriesOptions: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      key: {
-                        type: 'string',
-                        required: true
-                      },
-                      title: {
-                        type: 'string'
-                      },
-                      color: {
-                        type: 'string',
-                        format: 'color'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+        title: {
+          type: 'string',
+          required: true
+        },
+        description: {
+          type: 'string'
+        },
+        options
+      }
+    }
+    return propertiesSchema as IDataSchema;
+  }
+
+  private getGeneralSchema() {
+    const propertiesSchema = {
+      type: 'object',
+      required: ['apiEndpoint', 'title'],
+      properties: {
+        apiEndpoint: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        },
+        description: {
+          type: 'string'
         }
       }
     }
-    return propertiesSchema as any;
+    return propertiesSchema as IDataSchema;
   }
 
-  private getThemeSchema(readOnly?: boolean) {
+  private getAdvanceSchema() {
+    const propertiesSchema = {
+      type: 'object',
+      properties: {
+        options
+      }
+    };
+    return propertiesSchema as IDataSchema;
+  }
+
+  private getThemeSchema() {
     const themeSchema = {
       type: 'object',
       properties: {
@@ -269,22 +270,28 @@ export default class ScomBarChart extends Module {
     return themeSchema as IDataSchema;
   }
 
-  private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema) {
+  private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
     const actions = [
       {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
-          let _oldData: IBarChartConfig = { apiEndpoint: '', options: undefined };
+          let _oldData: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
           return {
             execute: async () => {
-              _oldData = {...this._data};
-              if (userInputData?.apiEndpoint !== undefined) this._data.apiEndpoint = userInputData.apiEndpoint;
-              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+              _oldData = { ...this._data };
+              if (userInputData) {
+                if (advancedSchema) {
+                  this._data = { ...this._data, ...userInputData };
+                } else {
+                  this._data = { ...userInputData };
+                }
+              }
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
             },
             undo: () => {
+              if (advancedSchema) _oldData = { ..._oldData, options: this._data.options };
               if (builder?.setData) builder.setData(_oldData);
               this.setData(_oldData);
             },
@@ -292,7 +299,7 @@ export default class ScomBarChart extends Module {
           }
         },
         userInputDataSchema: propertiesSchema,
-        userInputUISchema: {
+        userInputUISchema: advancedSchema ? undefined : {
           type: 'VerticalLayout',
           elements: [
             {
@@ -302,15 +309,15 @@ export default class ScomBarChart extends Module {
             },
             {
               type: 'Control',
-              scope: '#/properties/options/properties/title'
+              scope: '#/properties/title'
             },
             {
               type: 'Control',
-              scope: '#/properties/options/properties/description'
+              scope: '#/properties/description'
             },
             {
               type: 'Control',
-              scope: '#/properties/options/properties/options',
+              scope: '#/properties/options',
               options: {
                 detail: {
                   type: 'VerticalLayout'
@@ -344,6 +351,45 @@ export default class ScomBarChart extends Module {
         userInputDataSchema: themeSchema
       }
     ]
+    if (advancedSchema) {
+      const advanced = {
+        name: 'Advanced',
+        icon: 'sliders-h',
+        command: (builder: any, userInputData: any) => {
+          let _oldData: IBarChartOptions = {};
+          return {
+            execute: async () => {
+              _oldData = { ...this._data?.options };
+              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
+            },
+            undo: () => {
+              this._data.options = { ..._oldData };
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
+            },
+            redo: () => { }
+          }
+        },
+        userInputDataSchema: advancedSchema,
+        userInputUISchema: {
+          type: 'VerticalLayout',
+          elements: [
+            {
+              type: 'Control',
+              scope: '#/properties/options',
+              options: {
+                detail: {
+                  type: 'VerticalLayout'
+                }
+              }
+            }
+          ]
+        }
+      }
+      actions.push(advanced);
+    }
     return actions
   }
 
@@ -354,12 +400,12 @@ export default class ScomBarChart extends Module {
         name: 'Builder Configurator',
         target: 'Builders',
         getActions: () => {
-          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
+          return this._getActions(this.getGeneralSchema(), this.getThemeSchema(), this.getAdvanceSchema());
         },
         getData: this.getData.bind(this),
         setData: async (data: IBarChartConfig) => {
           const defaultData = configData.defaultBuilderData;
-          await this.setData({...defaultData, ...data});
+          await this.setData({ ...defaultData, ...data });
         },
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
@@ -368,7 +414,7 @@ export default class ScomBarChart extends Module {
         name: 'Emdedder Configurator',
         target: 'Embedders',
         getActions: () => {
-          return this._getActions(this.getPropertiesSchema(true), this.getThemeSchema(true))
+          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema())
         },
         getLinkParams: () => {
           const data = this._data || {};
@@ -436,7 +482,7 @@ export default class ScomBarChart extends Module {
 
   private renderChart() {
     if ((!this.pnlChart && this._data.options) || !this._data.options) return;
-    const { title, description, options } = this._data.options;
+    const { title, description, options } = this._data;
     this.lbTitle.caption = title;
     this.lbDescription.caption = description;
     this.lbDescription.visible = !!description;
@@ -610,6 +656,7 @@ export default class ScomBarChart extends Module {
         },
         axisLabel: {
           fontSize: 10,
+          hideOverlap: true,
           formatter: xAxis?.tickFormat ? (value: number, index: number) => {
             if (type === 'time') {
               return moment(value).format(xAxis.tickFormat)

@@ -1,43 +1,41 @@
 /// <amd-module name="@scom/scom-bar-chart/global/interfaces.ts" />
 declare module "@scom/scom-bar-chart/global/interfaces.ts" {
     export interface IBarChartOptions {
-        title: string;
-        description?: string;
-        options: {
-            xColumn: {
-                key: string;
-                type: 'time' | 'category';
-            };
-            yColumns: string[];
-            groupBy?: string;
-            seriesOptions?: {
-                key: string;
-                title?: string;
-                color?: string;
-            }[];
-            stacking?: boolean;
-            xAxis?: {
-                title?: string;
-                tickFormat?: string;
-                reverseValues?: boolean;
-            };
-            yAxis?: {
-                title?: string;
-                tickFormat?: string;
-                labelFormat?: string;
-                position?: 'left' | 'right';
-            };
-            legend?: {
-                show?: boolean;
-                scroll?: boolean;
-                position?: 'top' | 'bottom' | 'left' | 'right';
-            };
-            showDataLabels?: boolean;
-            percentage?: boolean;
+        xColumn?: {
+            key: string;
+            type: 'time' | 'category';
         };
+        yColumns?: string[];
+        groupBy?: string;
+        seriesOptions?: {
+            key: string;
+            title?: string;
+            color?: string;
+        }[];
+        stacking?: boolean;
+        xAxis?: {
+            title?: string;
+            tickFormat?: string;
+            reverseValues?: boolean;
+        };
+        yAxis?: {
+            title?: string;
+            tickFormat?: string;
+            labelFormat?: string;
+            position?: 'left' | 'right';
+        };
+        legend?: {
+            show?: boolean;
+            scroll?: boolean;
+            position?: 'top' | 'bottom' | 'left' | 'right';
+        };
+        showDataLabels?: boolean;
+        percentage?: boolean;
     }
     export interface IBarChartConfig {
         apiEndpoint: string;
+        title: string;
+        description?: string;
         options: IBarChartOptions;
     }
 }
@@ -107,32 +105,30 @@ declare module "@scom/scom-bar-chart/data.json.ts" {
     const _default_1: {
         defaultBuilderData: {
             apiEndpoint: string;
+            title: string;
             options: {
-                title: string;
-                options: {
-                    xColumn: {
-                        key: string;
-                        type: string;
-                    };
-                    yColumns: string[];
-                    groupBy: string;
-                    stacking: boolean;
-                    legend: {
-                        show: boolean;
-                    };
-                    seriesOptions: {
-                        key: string;
-                        color: string;
-                    }[];
-                    xAxis: {
-                        title: string;
-                        tickFormat: string;
-                    };
-                    yAxis: {
-                        title: string;
-                        position: string;
-                        labelFormat: string;
-                    };
+                xColumn: {
+                    key: string;
+                    type: string;
+                };
+                yColumns: string[];
+                groupBy: string;
+                stacking: boolean;
+                legend: {
+                    show: boolean;
+                };
+                seriesOptions: {
+                    key: string;
+                    color: string;
+                }[];
+                xAxis: {
+                    title: string;
+                    tickFormat: string;
+                };
+                yAxis: {
+                    title: string;
+                    position: string;
+                    labelFormat: string;
                 };
             };
         };
@@ -175,6 +171,8 @@ declare module "@scom/scom-bar-chart" {
         private getTag;
         private setTag;
         private getPropertiesSchema;
+        private getGeneralSchema;
+        private getAdvanceSchema;
         private getThemeSchema;
         private _getActions;
         getConfigurators(): ({
