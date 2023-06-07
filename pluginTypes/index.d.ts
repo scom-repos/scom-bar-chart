@@ -1,43 +1,41 @@
 /// <amd-module name="@scom/scom-bar-chart/global/interfaces.ts" />
 declare module "@scom/scom-bar-chart/global/interfaces.ts" {
     export interface IBarChartOptions {
-        title: string;
-        description?: string;
-        options: {
-            xColumn: {
-                key: string;
-                type: 'time' | 'category';
-            };
-            yColumns: string[];
-            groupBy?: string;
-            seriesOptions?: {
-                key: string;
-                title?: string;
-                color?: string;
-            }[];
-            stacking?: boolean;
-            xAxis?: {
-                title?: string;
-                tickFormat?: string;
-                reverseValues?: boolean;
-            };
-            yAxis?: {
-                title?: string;
-                tickFormat?: string;
-                labelFormat?: string;
-                position?: 'left' | 'right';
-            };
-            legend?: {
-                show?: boolean;
-                scroll?: boolean;
-                position?: 'top' | 'bottom' | 'left' | 'right';
-            };
-            showDataLabels?: boolean;
-            percentage?: boolean;
+        xColumn?: {
+            key: string;
+            type: 'time' | 'category';
         };
+        yColumns?: string[];
+        groupBy?: string;
+        seriesOptions?: {
+            key: string;
+            title?: string;
+            color?: string;
+        }[];
+        stacking?: boolean;
+        xAxis?: {
+            title?: string;
+            tickFormat?: string;
+            reverseValues?: boolean;
+        };
+        yAxis?: {
+            title?: string;
+            tickFormat?: string;
+            labelFormat?: string;
+            position?: 'left' | 'right';
+        };
+        legend?: {
+            show?: boolean;
+            scroll?: boolean;
+            position?: 'top' | 'bottom' | 'left' | 'right';
+        };
+        showDataLabels?: boolean;
+        percentage?: boolean;
     }
     export interface IBarChartConfig {
         apiEndpoint: string;
+        title: string;
+        description?: string;
         options: IBarChartOptions;
     }
 }
@@ -107,32 +105,30 @@ declare module "@scom/scom-bar-chart/data.json.ts" {
     const _default_1: {
         defaultBuilderData: {
             apiEndpoint: string;
+            title: string;
             options: {
-                title: string;
-                options: {
-                    xColumn: {
-                        key: string;
-                        type: string;
-                    };
-                    yColumns: string[];
-                    groupBy: string;
-                    stacking: boolean;
-                    legend: {
-                        show: boolean;
-                    };
-                    seriesOptions: {
-                        key: string;
-                        color: string;
-                    }[];
-                    xAxis: {
-                        title: string;
-                        tickFormat: string;
-                    };
-                    yAxis: {
-                        title: string;
-                        position: string;
-                        labelFormat: string;
-                    };
+                xColumn: {
+                    key: string;
+                    type: string;
+                };
+                yColumns: string[];
+                groupBy: string;
+                stacking: boolean;
+                legend: {
+                    show: boolean;
+                };
+                seriesOptions: {
+                    key: string;
+                    color: string;
+                }[];
+                xAxis: {
+                    title: string;
+                    tickFormat: string;
+                };
+                yAxis: {
+                    title: string;
+                    position: string;
+                    labelFormat: string;
                 };
             };
         };
@@ -175,9 +171,11 @@ declare module "@scom/scom-bar-chart" {
         private getTag;
         private setTag;
         private getPropertiesSchema;
+        private getGeneralSchema;
+        private getAdvanceSchema;
         private getThemeSchema;
         private _getActions;
-        getConfigurators(): {
+        getConfigurators(): ({
             name: string;
             target: string;
             getActions: () => ({
@@ -224,10 +222,66 @@ declare module "@scom/scom-bar-chart" {
                 userInputUISchema?: undefined;
             })[];
             getData: any;
+            setData: (data: IBarChartConfig) => Promise<void>;
+            getTag: any;
+            setTag: any;
+            getLinkParams?: undefined;
+            setLinkParams?: undefined;
+        } | {
+            name: string;
+            target: string;
+            getActions: () => ({
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => Promise<void>;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: IDataSchema;
+                userInputUISchema: {
+                    type: string;
+                    elements: ({
+                        type: string;
+                        scope: string;
+                        title: string;
+                        options?: undefined;
+                    } | {
+                        type: string;
+                        scope: string;
+                        title?: undefined;
+                        options?: undefined;
+                    } | {
+                        type: string;
+                        scope: string;
+                        options: {
+                            detail: {
+                                type: string;
+                            };
+                        };
+                        title?: undefined;
+                    })[];
+                };
+            } | {
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => Promise<void>;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: IDataSchema;
+                userInputUISchema?: undefined;
+            })[];
+            getLinkParams: () => {
+                data: string;
+            };
+            setLinkParams: (params: any) => Promise<void>;
+            getData: any;
             setData: any;
             getTag: any;
             setTag: any;
-        }[];
+        })[];
         private updateStyle;
         private updateTheme;
         private onUpdateBlock;
