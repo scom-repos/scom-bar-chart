@@ -260,9 +260,9 @@ export default class ScomBarChart extends Module {
           type: 'string',
           format: 'color'
         },
-        width: {
-          type: 'string'
-        },
+        // width: {
+        //   type: 'string'
+        // },
         height: {
           type: 'string'
         }

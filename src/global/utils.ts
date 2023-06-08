@@ -61,16 +61,24 @@ export const formatNumberWithSeparators = (value: number, precision?: number) =>
 }
 
 export const groupArrayByKey = (arr: [ Date | string, string | number ][]) => {
-  return arr.reduce((acc, [key, value]) => {
-    const group = acc.find(([k, _]) => k.toString() === key.toString());
-    if (group) {
-      const val = group[1];
-      group[1] = val === null ? value : isNaN(Number(val)) ? val : Number(val) + Number(value);
+  const groups = new Map<string, number | string>();
+  for (const [key, value] of arr) {
+    const strKey = key instanceof Date ? key.getTime().toString() : key.toString();
+    const existingValue = groups.get(strKey);
+    if (existingValue !== undefined) {
+      if (typeof existingValue === 'number' && typeof value === 'number') {
+        groups.set(strKey, existingValue + value);
+      } else {
+        groups.set(strKey, value);
+      }
     } else {
-      acc.push([key, value]);
+      groups.set(strKey, value);
     }
-    return acc;
-  }, []);
+  }
+  return Array.from(groups.entries()).map(([key, value]) => {
+    const parsedKey = isNaN(Number(key)) ? key : new Date(Number(key));
+    return [parsedKey, value];
+  });
 }
 
 export const groupByCategory = (data: { [key: string]: any }[], category: string, xAxis: string, yAxis: string) => {
