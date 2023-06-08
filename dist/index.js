@@ -1,6 +1,10 @@
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -28,48 +32,48 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports"], function 
             return '-';
         const { decimals, format, percentValues } = options || {};
         if (percentValues) {
-            return `${exports.formatNumberWithSeparators(num, 2)}%`;
+            return `${(0, exports.formatNumberWithSeparators)(num, 2)}%`;
         }
         if (format) {
-            return exports.formatNumberByFormat(num, format);
+            return (0, exports.formatNumberByFormat)(num, format);
         }
         const absNum = Math.abs(num);
         if (absNum >= 1000000000) {
-            return exports.formatNumberWithSeparators((num / 1000000000), decimals || 3) + 'B';
+            return (0, exports.formatNumberWithSeparators)((num / 1000000000), decimals || 3) + 'B';
         }
         if (absNum >= 1000000) {
-            return exports.formatNumberWithSeparators((num / 1000000), decimals || 3) + 'M';
+            return (0, exports.formatNumberWithSeparators)((num / 1000000), decimals || 3) + 'M';
         }
         if (absNum >= 1000) {
-            return exports.formatNumberWithSeparators((num / 1000), decimals || 3) + 'K';
+            return (0, exports.formatNumberWithSeparators)((num / 1000), decimals || 3) + 'K';
         }
         if (absNum < 0.0000001) {
-            return exports.formatNumberWithSeparators(num);
+            return (0, exports.formatNumberWithSeparators)(num);
         }
         if (absNum < 0.00001) {
-            return exports.formatNumberWithSeparators(num, 6);
+            return (0, exports.formatNumberWithSeparators)(num, 6);
         }
         if (absNum < 0.001) {
-            return exports.formatNumberWithSeparators(num, 4);
+            return (0, exports.formatNumberWithSeparators)(num, 4);
         }
-        return exports.formatNumberWithSeparators(num, 2);
+        return (0, exports.formatNumberWithSeparators)(num, 2);
     };
     exports.formatNumber = formatNumber;
     const formatNumberByFormat = (num, format, separators) => {
         if (!format)
-            return exports.formatNumberWithSeparators(num);
+            return (0, exports.formatNumberWithSeparators)(num);
         const decimalPlaces = format.split('.')[1] ? format.split('.').length : 0;
         if (format.includes('%')) {
-            return exports.formatNumberWithSeparators((num * 100), decimalPlaces) + '%';
+            return (0, exports.formatNumberWithSeparators)((num * 100), decimalPlaces) + '%';
         }
         const currencySymbol = format.indexOf('$') !== -1 ? '$' : '';
-        const roundedNum = exports.formatNumberWithSeparators(num, decimalPlaces);
+        const roundedNum = (0, exports.formatNumberWithSeparators)(num, decimalPlaces);
         if (separators || !(format.includes('m') || format.includes('a'))) {
             return format.indexOf('$') === 0 ? `${currencySymbol}${roundedNum}` : `${roundedNum}${currencySymbol}`;
         }
         const parts = roundedNum.split('.');
         const decimalPart = parts.length > 1 ? parts[1] : '';
-        const integerPart = exports.formatNumber(parseInt(parts[0].replace(/,/g, '')), { decimals: decimalPart.length });
+        const integerPart = (0, exports.formatNumber)(parseInt(parts[0].replace(/,/g, '')), { decimals: decimalPart.length });
         return `${currencySymbol}${integerPart}`;
     };
     exports.formatNumberByFormat = formatNumberByFormat;
@@ -231,6 +235,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
+    const currentTheme = components_3.Styles.Theme.currentTheme;
     const options = {
         type: 'object',
         properties: {
@@ -340,6 +345,11 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         }
     };
     let ScomBarChart = class ScomBarChart extends components_3.Module {
+        static async create(options, parent) {
+            let self = new this(parent, options);
+            await self.ready();
+            return self;
+        }
         constructor(parent, options) {
             super(parent, options);
             this.chartData = [];
@@ -347,11 +357,6 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this._data = { apiEndpoint: '', title: '', options: undefined };
             this.tag = {};
             this.defaultEdit = true;
-        }
-        static async create(options, parent) {
-            let self = new this(parent, options);
-            await self.ready();
-            return self;
         }
         getData() {
             return this._data;
@@ -652,7 +657,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.apiEndpoint = apiEndpoint;
             if (apiEndpoint) {
                 this.loadingElm.visible = true;
-                const data = await index_1.callAPI(apiEndpoint);
+                const data = await (0, index_1.callAPI)(apiEndpoint);
                 this.loadingElm.visible = false;
                 if (data && this._data.apiEndpoint === apiEndpoint) {
                     this.chartData = data;
@@ -689,13 +694,13 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             let arr = this.chartData;
             const item = (arr && arr[0]) || {};
             if (groupBy && item[groupBy] !== undefined) {
-                const group = index_1.groupByCategory(arr, groupBy, key, yColumns[0]);
-                const times = index_1.extractUniqueTimes(arr, key);
+                const group = (0, index_1.groupByCategory)(arr, groupBy, key, yColumns[0]);
+                const times = (0, index_1.extractUniqueTimes)(arr, key);
                 let groupData = {};
                 const keys = Object.keys(group);
                 keys.map(v => {
-                    const _data = index_1.concatUnique(times, group[v]);
-                    groupData[v] = index_1.groupArrayByKey(Object.keys(_data).map(m => [type === 'time' ? new Date(m) : m, _data[m]]));
+                    const _data = (0, index_1.concatUnique)(times, group[v]);
+                    groupData[v] = (0, index_1.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? new Date(m) : m, _data[m]]));
                 });
                 const isPercentage = percentage && groupData[keys[0]] && typeof groupData[keys[0]][0][1] === 'number';
                 _series = keys.map(v => {
@@ -725,7 +730,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         label: showDataLabels ? {
                             show: true,
                             formatter: function (params) {
-                                return index_1.formatNumber(params.value);
+                                return (0, index_1.formatNumber)(params.value);
                             }
                         } : undefined,
                         data: _data
@@ -739,7 +744,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     if (isPercentage && typeof arr[0][col] !== 'number') {
                         isPercentage = false;
                     }
-                    groupData[col] = index_1.groupArrayByKey(arr.map(v => [type === 'time' ? new Date(v[key]) : col, v[col]]));
+                    groupData[col] = (0, index_1.groupArrayByKey)(arr.map(v => [type === 'time' ? new Date(v[key]) : col, v[col]]));
                 });
                 _series = yColumns.map((col) => {
                     let _data = [];
@@ -768,7 +773,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         label: showDataLabels ? {
                             show: true,
                             formatter: function (params) {
-                                return index_1.formatNumber(params.value);
+                                return (0, index_1.formatNumber)(params.value);
                             }
                         } : undefined,
                         data: _data
@@ -813,14 +818,14 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         return [x, y];
                     },
                     formatter: (params) => {
-                        let res = `<b>${xColumn.type === 'time' ? components_3.moment(params[0].axisValue).format('YYYY-MM-DD HH:mm') : params[0].axisValue}</b>`;
+                        let res = `<b>${xColumn.type === 'time' ? (0, components_3.moment)(params[0].axisValue).format('YYYY-MM-DD HH:mm') : params[0].axisValue}</b>`;
                         if (_series.length === 1) {
-                            res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${params[0].marker} ${params[0].seriesName}</span> ${params[0].value[1] === null ? '-' : percentage ? index_1.formatNumber(params[0].value[1], { percentValues: true }) : index_1.formatNumberByFormat(params[0].value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
+                            res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${params[0].marker} ${params[0].seriesName}</span> ${params[0].value[1] === null ? '-' : percentage ? (0, index_1.formatNumber)(params[0].value[1], { percentValues: true }) : (0, index_1.formatNumberByFormat)(params[0].value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
                         }
                         else {
                             for (const param of params) {
                                 if (param.value[1] !== null) {
-                                    res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${param.marker} ${param.seriesName}</span> ${percentage ? index_1.formatNumber(param.value[1], { percentValues: true }) : index_1.formatNumberByFormat(param.value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
+                                    res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${param.marker} ${param.seriesName}</span> ${percentage ? (0, index_1.formatNumber)(param.value[1], { percentValues: true }) : (0, index_1.formatNumberByFormat)(param.value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
                                 }
                             }
                         }
@@ -849,12 +854,12 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         hideOverlap: true,
                         formatter: (xAxis === null || xAxis === void 0 ? void 0 : xAxis.tickFormat) ? (value, index) => {
                             if (type === 'time') {
-                                return components_3.moment(value).format(xAxis.tickFormat);
+                                return (0, components_3.moment)(value).format(xAxis.tickFormat);
                             }
                             else {
                                 if (isNaN(value))
                                     return value;
-                                return index_1.formatNumber(value, { format: xAxis.tickFormat, decimals: 2 });
+                                return (0, index_1.formatNumber)(value, { format: xAxis.tickFormat, decimals: 2 });
                             }
                         } : undefined
                     }
@@ -877,7 +882,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         fontSize: 10,
                         position: 'end',
                         formatter: (value, index) => {
-                            return index_1.formatNumber(value, { format: yAxis === null || yAxis === void 0 ? void 0 : yAxis.tickFormat, decimals: 2, percentValues: percentage });
+                            return (0, index_1.formatNumber)(value, { format: yAxis === null || yAxis === void 0 ? void 0 : yAxis.tickFormat, decimals: 2, percentValues: percentage });
                         }
                     },
                     splitNumber: 4
@@ -903,12 +908,18 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.isReadyCallbackQueued = true;
             this.updateTheme();
             super.init();
+            this.setTag({
+                fontColor: currentTheme.text.primary,
+                backgroundColor: currentTheme.background.main,
+                darkShadow: false,
+                height: 500
+            });
             this.classList.add(index_css_1.chartStyle);
-            const { width, height, darkShadow } = this.tag || {};
-            this.width = width || 700;
-            this.height = height || 500;
+            // const { width, height, darkShadow } = this.tag || {};
+            // this.width = width || 700;
+            // this.height = height || 500;
             this.maxWidth = '100%';
-            this.chartContainer.style.boxShadow = darkShadow ? '0 -2px 10px rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
+            this.chartContainer.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
             const data = this.getAttribute('data', true);
             if (data) {
                 this.setData(data);
@@ -934,7 +945,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
     };
     ScomBarChart = __decorate([
         components_3.customModule,
-        components_3.customElements('i-scom-bar-chart')
+        (0, components_3.customElements)('i-scom-bar-chart')
     ], ScomBarChart);
     exports.default = ScomBarChart;
 });
