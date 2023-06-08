@@ -442,9 +442,9 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         type: 'string',
                         format: 'color'
                     },
-                    width: {
-                        type: 'string'
-                    },
+                    // width: {
+                    //   type: 'string'
+                    // },
                     height: {
                         type: 'string'
                     }
