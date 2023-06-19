@@ -140,6 +140,7 @@ declare module "@scom/scom-bar-chart" {
     import { Module, ControlElement, Container, IDataSchema } from '@ijstech/components';
     import { IBarChartConfig } from "@scom/scom-bar-chart/global/index.ts";
     interface ScomBarChartElement extends ControlElement {
+        lazyLoad?: boolean;
         data: IBarChartConfig;
     }
     global {

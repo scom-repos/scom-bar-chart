@@ -915,8 +915,8 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         }
         async init() {
             this.isReadyCallbackQueued = true;
-            this.updateTheme();
             super.init();
+            this.updateTheme();
             this.setTag({
                 fontColor: currentTheme.text.primary,
                 backgroundColor: currentTheme.background.main,
@@ -929,9 +929,12 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             // this.height = height || 500;
             this.maxWidth = '100%';
             this.chartContainer.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
-            const data = this.getAttribute('data', true);
-            if (data) {
-                this.setData(data);
+            const lazyLoad = this.getAttribute('lazyLoad', true, false);
+            if (!lazyLoad) {
+                const data = this.getAttribute('data', true);
+                if (data) {
+                    this.setData(data);
+                }
             }
             this.isReadyCallbackQueued = false;
             this.executeReadyCallback();
