@@ -154,7 +154,6 @@ export default class ScomBarChart extends Module {
   private lbDescription: Label;
   private chartData: { [key: string]: string | number }[] = [];
   private apiEndpoint = '';
-  private mode: ModeType = ModeType.LIVE;
 
   private _data: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
   tag: any = {};
@@ -178,6 +177,7 @@ export default class ScomBarChart extends Module {
   }
 
   private async setData(data: IBarChartConfig) {
+    if (!data?.mode) data.mode = ModeType.LIVE;
     this._data = data;
     this.updateChartData();
   }
@@ -426,13 +426,13 @@ export default class ScomBarChart extends Module {
           let _oldData: IBarChartOptions = {};
           return {
             execute: async () => {
-              _oldData = { ...this._data?.options };
+              _oldData = JSON.parse(JSON.stringify(this._data?.options));
               if (userInputData?.options !== undefined) this._data.options = userInputData.options;
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
             },
             undo: () => {
-              this._data.options = { ..._oldData };
+              this._data.options = JSON.parse(JSON.stringify(_oldData));
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
             },
@@ -527,17 +527,17 @@ export default class ScomBarChart extends Module {
   }
 
   private async updateChartData() {
-    if (this._data.mode === ModeType.LIVE)
-      this.renderLiveData();
+    this.loadingElm.visible = true;
+    if (this._data?.mode === ModeType.SNAPSHOT)
+      await this.renderSnapshotData();
     else
-      this.renderSnapshotData();
+      await this.renderLiveData();
+    this.loadingElm.visible = false;
   }
 
   private async renderSnapshotData() {
     if (this._data.file?.cid) {
-      this.loadingElm.visible = true;
       const data = await fetchDataByCid(this._data.file.cid);
-      this.loadingElm.visible = false;
       if (data) {
         this.chartData = data;
         this.onUpdateBlock();
@@ -556,17 +556,15 @@ export default class ScomBarChart extends Module {
     const apiEndpoint = this._data.apiEndpoint;
     this.apiEndpoint = apiEndpoint;
     if (apiEndpoint) {
-      this.loadingElm.visible = true;
       let data = null
       try {
         data = await callAPI(apiEndpoint);
+        if (data && this._data.apiEndpoint === apiEndpoint) {
+          this.chartData = data;
+          this.onUpdateBlock();
+          return;
+        }
       } catch {}
-      this.loadingElm.visible = false;
-      if (data && this._data.apiEndpoint === apiEndpoint) {
-        this.chartData = data;
-        this.onUpdateBlock();
-        return;
-      }
     }
     this.chartData = [];
     this.onUpdateBlock();

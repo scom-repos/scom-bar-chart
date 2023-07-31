@@ -238,7 +238,6 @@ declare module "@scom/scom-bar-chart" {
         private lbDescription;
         private chartData;
         private apiEndpoint;
-        private mode;
         private _data;
         tag: any;
         defaultEdit: boolean;
