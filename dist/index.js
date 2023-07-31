@@ -521,7 +521,7 @@ define("@scom/scom-bar-chart/config/index.tsx", ["require", "exports", "@ijstech
                             this.$render("i-button", { id: 'captureBtn', height: 42, caption: 'Capture Snapshot', background: { color: Theme.colors.primary.main }, font: { color: Theme.colors.primary.contrastText }, rightIcon: { name: 'spinner', spin: false, fill: Theme.colors.primary.contrastText, width: 16, height: 16, visible: false }, class: "capture-btn", enabled: false, onClick: this.onCapture }))),
                     this.$render("i-vstack", { id: "pnlUpload", gap: '10px' },
                         this.$render("i-label", { caption: 'Upload' }),
-                        this.$render("i-upload", { id: "uploadBtn", width: "100%", caption: 'Upload JSON file', onChanged: this.onImportFile, class: index_css_1.uploadStyle }),
+                        this.$render("i-upload", { id: "uploadBtn", width: "100%", onChanged: this.onImportFile, class: index_css_1.uploadStyle }),
                         this.$render("i-label", { id: "fileNameLb", visible: false, caption: '' })),
                     this.$render("i-vstack", { gap: '10px' },
                         this.$render("i-button", { id: "downloadBtn", margin: { top: 10 }, height: 42, width: "100%", font: { color: Theme.colors.primary.contrastText }, rightIcon: { name: 'spinner', spin: false, fill: Theme.colors.primary.contrastText, width: 16, height: 16, visible: false }, caption: "Download File", onClick: this.onExportFile }))),

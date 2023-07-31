@@ -253,7 +253,6 @@ export default class ScomBarChartData extends Module {
             <i-upload
               id="uploadBtn"
               width="100%"
-              caption='Upload JSON file'
               onChanged={this.onImportFile}
               class={uploadStyle}
             ></i-upload>
