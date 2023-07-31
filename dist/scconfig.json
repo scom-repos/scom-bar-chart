@@ -1,0 +1,8 @@
+{
+    "name": "@scom/scom-bar-chart",
+    "type": "widget",
+    "version": "0.1.4",
+    "dependencies": [
+        "@ijstech/components"
+    ]
+}

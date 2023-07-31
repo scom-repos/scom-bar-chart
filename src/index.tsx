@@ -11,12 +11,14 @@ import {
   Styles,
   Panel,
   BarChart,
-  moment
+  moment,
+  Button
 } from '@ijstech/components';
-import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions } from './global/index';
+import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions, ModeType, fetchDataByCid } from './global/index';
 import { chartStyle, containerStyle } from './index.css';
 import assets from './assets';
 import configData from './data.json';
+import ScomBarChartData from './config/index';
 const Theme = Styles.Theme.ThemeVars;
 const currentTheme = Styles.Theme.currentTheme;
 
@@ -130,7 +132,7 @@ const options = {
 }
 interface ScomBarChartElement extends ControlElement {
   lazyLoad?: boolean;
-  data: IBarChartConfig
+  data: IBarChartConfig;
 }
 
 declare global {
@@ -152,6 +154,7 @@ export default class ScomBarChart extends Module {
   private lbDescription: Label;
   private chartData: { [key: string]: string | number }[] = [];
   private apiEndpoint = '';
+  private mode: ModeType = ModeType.LIVE;
 
   private _data: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
   tag: any = {};
@@ -199,11 +202,11 @@ export default class ScomBarChart extends Module {
     const propertiesSchema = {
       type: 'object',
       properties: {
-        apiEndpoint: {
-          type: 'string',
-          title: 'API Endpoint',
-          required: true
-        },
+        // apiEndpoint: {
+        //   type: 'string',
+        //   title: 'API Endpoint',
+        //   required: true
+        // },
         title: {
           type: 'string',
           required: true
@@ -220,11 +223,11 @@ export default class ScomBarChart extends Module {
   private getGeneralSchema() {
     const propertiesSchema = {
       type: 'object',
-      required: ['apiEndpoint', 'title'],
+      required: ['title'],
       properties: {
-        apiEndpoint: {
-          type: 'string'
-        },
+        // apiEndpoint: {
+        //   type: 'string'
+        // },
         title: {
           type: 'string'
         },
@@ -275,6 +278,68 @@ export default class ScomBarChart extends Module {
   private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
     const actions = [
       {
+        name: 'Data Source',
+        icon: 'database',
+        command: (builder: any, userInputData: any) => {
+          let _oldData: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
+          return {
+            execute: async () => {
+              _oldData = { ...this._data };
+              if (userInputData) {
+                if (advancedSchema) {
+                  this._data = { ...this._data, ...userInputData };
+                } else {
+                  this._data = { ...userInputData };
+                }
+              }
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
+            },
+            undo: () => {
+              if (advancedSchema) _oldData = { ..._oldData, options: this._data.options };
+              if (builder?.setData) builder.setData(_oldData);
+              this.setData(_oldData);
+            },
+            redo: () => { }
+          }
+        },
+        customUI: {
+          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+            const vstack = new VStack(null, {gap: '1rem'});
+            const config = new ScomBarChartData(null, {...this._data, chartData: JSON.stringify(this.chartData)});
+            const hstack = new HStack(null, {
+              verticalAlignment: 'center',
+              horizontalAlignment: 'end'
+            });
+            const button = new Button(null, {
+              caption: 'Confirm',
+              width: 'auto',
+              height: 40,
+              font: {color: Theme.colors.primary.contrastText}
+            });
+            hstack.append(button);
+            vstack.append(config);
+            vstack.append(hstack);
+            button.onClick = async () => {
+              const { apiEndpoint, file, mode } = config.data;
+              if (mode === 'Live') {
+                if (!apiEndpoint) return;
+                this._data.apiEndpoint = apiEndpoint;
+                this.updateChartData();
+              } else {
+                if (!file?.cid) return;
+                this.chartData = config.data.chartData ? JSON.parse(config.data.chartData) : []
+                this.onUpdateBlock();
+              }
+              if (onConfirm) {
+                onConfirm(true, {...this._data, apiEndpoint, file, mode});
+              }
+            }
+            return vstack;
+          }
+        }
+      },
+      {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
@@ -304,11 +369,11 @@ export default class ScomBarChart extends Module {
         userInputUISchema: advancedSchema ? undefined : {
           type: 'VerticalLayout',
           elements: [
-            {
-              type: 'Control',
-              scope: '#/properties/apiEndpoint',
-              title: 'API Endpoint'
-            },
+            // {
+            //   type: 'Control',
+            //   scope: '#/properties/apiEndpoint',
+            //   title: 'API Endpoint'
+            // },
             {
               type: 'Control',
               scope: '#/properties/title'
@@ -462,6 +527,28 @@ export default class ScomBarChart extends Module {
   }
 
   private async updateChartData() {
+    if (this._data.mode === ModeType.LIVE)
+      this.renderLiveData();
+    else
+      this.renderSnapshotData();
+  }
+
+  private async renderSnapshotData() {
+    if (this._data.file?.cid) {
+      this.loadingElm.visible = true;
+      const data = await fetchDataByCid(this._data.file.cid);
+      this.loadingElm.visible = false;
+      if (data) {
+        this.chartData = data;
+        this.onUpdateBlock();
+        return;
+      }
+    }
+    this.chartData = [];
+    this.onUpdateBlock();
+  }
+
+  private async renderLiveData() {
     if (this._data.apiEndpoint === this.apiEndpoint) {
       this.onUpdateBlock();
       return;
@@ -470,7 +557,10 @@ export default class ScomBarChart extends Module {
     this.apiEndpoint = apiEndpoint;
     if (apiEndpoint) {
       this.loadingElm.visible = true;
-      const data = await callAPI(apiEndpoint);
+      let data = null
+      try {
+        data = await callAPI(apiEndpoint);
+      } catch {}
       this.loadingElm.visible = false;
       if (data && this._data.apiEndpoint === apiEndpoint) {
         this.chartData = data;
@@ -752,7 +842,7 @@ export default class ScomBarChart extends Module {
         padding={{ top: 10, bottom: 10, left: 10, right: 10 }}
         class={containerStyle}
       >
-        <i-vstack id="loadingElm" class="i-loading-overlay">
+        <i-vstack id="loadingElm" class="i-loading-overlay" visible={false}>
           <i-vstack class="i-loading-spinner" horizontalAlignment="center" verticalAlignment="center">
             <i-icon
               class="i-loading-spinner_icon"

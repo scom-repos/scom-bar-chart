@@ -122,3 +122,45 @@ export const callAPI = async (apiEndpoint: string) => {
   }
   return [];
 }
+
+export const readJsonFromFileExplorer = async () => {
+  return new Promise<string>((resolve, reject) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = () => {
+      const files = input.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        const reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = (event) => {
+          resolve(event.target?.result as string);
+        };
+        reader.onerror = (event) => {
+          reject(event.target?.error);
+        };
+      } else {
+        reject('No file selected');
+      }
+    };
+    input.click();
+  });
+}
+
+const _fetchFileContentByCID = async (ipfsCid: string) => {
+  let res;
+  try {
+    // const ipfsBaseUrl = `${window.location.origin}/ipfs/`;
+    const ipfsBaseUrl = `https://ipfs.scom.dev/ipfs/`
+    res = await fetch(ipfsBaseUrl + ipfsCid);
+  } catch (err) {
+  }
+  return res;
+}
+
+export const fetchDataByCid = async (ipfsCid: string) => {
+  const res = await _fetchFileContentByCID(ipfsCid);
+  const content = await res.json();
+  return content;
+}
