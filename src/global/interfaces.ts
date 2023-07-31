@@ -31,9 +31,19 @@ export interface IBarChartOptions {
   percentage?: boolean
 }
 
+export enum ModeType {
+  LIVE = 'Live',
+  SNAPSHOT = 'Snapshot'
+}
+
 export interface IBarChartConfig {
-  apiEndpoint: string,
+  apiEndpoint?: string,
   title: string,
   description?: string,
-  options: IBarChartOptions
+  options: IBarChartOptions,
+  file?: {
+    cid?: string,
+    name?: string
+  },
+  mode?: ModeType
 }

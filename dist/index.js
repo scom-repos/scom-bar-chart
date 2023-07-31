@@ -21,11 +21,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("@scom/scom-bar-chart/global/interfaces.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ModeType = void 0;
+    var ModeType;
+    (function (ModeType) {
+        ModeType["LIVE"] = "Live";
+        ModeType["SNAPSHOT"] = "Snapshot";
+    })(ModeType = exports.ModeType || (exports.ModeType = {}));
 });
 define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.callAPI = exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberWithSeparators = exports.formatNumberByFormat = exports.formatNumber = void 0;
+    exports.fetchDataByCid = exports.readJsonFromFileExplorer = exports.callAPI = exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberWithSeparators = exports.formatNumberByFormat = exports.formatNumber = void 0;
     ///<amd-module name='@scom/scom-bar-chart/global/utils.ts'/> 
     const formatNumber = (num, options) => {
         if (num === null)
@@ -160,6 +166,51 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports"], function 
         return [];
     };
     exports.callAPI = callAPI;
+    const readJsonFromFileExplorer = async () => {
+        return new Promise((resolve, reject) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = () => {
+                const files = input.files;
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    const reader = new FileReader();
+                    reader.readAsText(file, 'UTF-8');
+                    reader.onload = (event) => {
+                        var _a;
+                        resolve((_a = event.target) === null || _a === void 0 ? void 0 : _a.result);
+                    };
+                    reader.onerror = (event) => {
+                        var _a;
+                        reject((_a = event.target) === null || _a === void 0 ? void 0 : _a.error);
+                    };
+                }
+                else {
+                    reject('No file selected');
+                }
+            };
+            input.click();
+        });
+    };
+    exports.readJsonFromFileExplorer = readJsonFromFileExplorer;
+    const _fetchFileContentByCID = async (ipfsCid) => {
+        let res;
+        try {
+            // const ipfsBaseUrl = `${window.location.origin}/ipfs/`;
+            const ipfsBaseUrl = `https://ipfs.scom.dev/ipfs/`;
+            res = await fetch(ipfsBaseUrl + ipfsCid);
+        }
+        catch (err) {
+        }
+        return res;
+    };
+    const fetchDataByCid = async (ipfsCid) => {
+        const res = await _fetchFileContentByCID(ipfsCid);
+        const content = await res.json();
+        return content;
+    };
+    exports.fetchDataByCid = fetchDataByCid;
 });
 define("@scom/scom-bar-chart/global/index.ts", ["require", "exports", "@scom/scom-bar-chart/global/interfaces.ts", "@scom/scom-bar-chart/global/utils.ts"], function (require, exports, interfaces_1, utils_1) {
     "use strict";
@@ -240,11 +291,254 @@ define("@scom/scom-bar-chart/data.json.ts", ["require", "exports"], function (re
         }
     };
 });
-define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@scom/scom-bar-chart/global/index.ts", "@scom/scom-bar-chart/index.css.ts", "@scom/scom-bar-chart/assets.ts", "@scom/scom-bar-chart/data.json.ts"], function (require, exports, components_3, index_1, index_css_1, assets_1, data_json_1) {
+define("@scom/scom-bar-chart/config/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.uploadStyle = exports.comboBoxStyle = void 0;
     const Theme = components_3.Styles.Theme.ThemeVars;
-    const currentTheme = components_3.Styles.Theme.currentTheme;
+    components_3.Styles.cssRule('i-scom-bar-chart-data', {
+        $nest: {
+            'i-input > input': {
+                padding: '0.5rem 1rem'
+            },
+            '.capture-btn': {
+                whiteSpace: 'nowrap'
+            }
+        }
+    });
+    exports.comboBoxStyle = components_3.Styles.style({
+        width: '100% !important',
+        $nest: {
+            '.selection': {
+                width: '100% !important',
+                maxWidth: '100%',
+                padding: '0.5rem 1rem',
+                color: Theme.input.fontColor,
+                backgroundColor: Theme.input.background,
+                borderRadius: 0
+            },
+            '.selection input': {
+                color: 'inherit',
+                backgroundColor: 'inherit',
+                padding: 0
+            },
+            '.selection:focus-within': {
+                backgroundColor: `darken(${Theme.input.background}, 20%)`
+            },
+            '> .icon-btn:hover': {
+                backgroundColor: 'transparent'
+            }
+        }
+    });
+    exports.uploadStyle = components_3.Styles.style({
+        height: 'auto',
+        width: '100%',
+        margin: 0,
+        $nest: {
+            '> .i-upload-wrapper': {
+                marginBottom: 0
+            }
+        }
+    });
+});
+define("@scom/scom-bar-chart/config/interface.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("@scom/scom-bar-chart/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-bar-chart/global/index.ts", "@scom/scom-bar-chart/config/index.css.ts", "@scom/scom-bar-chart/config/index.css.ts"], function (require, exports, components_4, index_1, index_css_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    const modeOptions = [
+        {
+            label: 'Live',
+            value: index_1.ModeType.LIVE
+        },
+        {
+            label: 'Snapshot',
+            value: index_1.ModeType.SNAPSHOT
+        }
+    ];
+    let ScomBarChartData = class ScomBarChartData extends components_4.Module {
+        constructor(parent, options) {
+            super(parent, options);
+        }
+        static async create(options, parent) {
+            let self = new this(parent, options);
+            await self.ready();
+            return self;
+        }
+        get data() {
+            return this._data;
+        }
+        set data(value) {
+            this._data = value;
+            this.renderUI();
+        }
+        get mode() {
+            return this._data.mode;
+        }
+        set mode(value) {
+            this._data.mode = value;
+            this.updateMode();
+        }
+        get apiEndpoint() {
+            return this._data.apiEndpoint;
+        }
+        set apiEndpoint(value) {
+            this._data.apiEndpoint = value;
+        }
+        renderUI() {
+            var _a;
+            const findedMode = modeOptions.find((mode) => mode.value === this.data.mode);
+            if (findedMode)
+                this.modeSelect.selectedItem = findedMode;
+            this.updateMode();
+            this.endpointInput.value = (_a = this.data.apiEndpoint) !== null && _a !== void 0 ? _a : '';
+            this.captureBtn.enabled = !!this.endpointInput.value;
+        }
+        onModeChanged() {
+            this.data.mode = this.modeSelect.selectedItem.value;
+            this.updateMode();
+        }
+        async updateMode() {
+            var _a, _b;
+            const isSnapshot = this.data.mode === index_1.ModeType.SNAPSHOT;
+            this.captureBtn.visible = isSnapshot;
+            this.endpointInput.readOnly = isSnapshot;
+            this.requiredLb.visible = !isSnapshot;
+            this.pnlUpload.visible = isSnapshot;
+            this.fileNameLb.visible = !!((_a = this.data.file) === null || _a === void 0 ? void 0 : _a.cid);
+            this.fileNameLb.caption = `File name: ${((_b = this.data.file) === null || _b === void 0 ? void 0 : _b.name) || ''}`;
+        }
+        async updateChartData() {
+            const data = this.data.apiEndpoint ? await (0, index_1.callAPI)(this.data.apiEndpoint) : [];
+            this._data.chartData = JSON.stringify(data, null, 4);
+        }
+        onUpdateEndpoint() {
+            var _a;
+            this.data.apiEndpoint = (_a = this.endpointInput.value) !== null && _a !== void 0 ? _a : '';
+            this.captureBtn.enabled = !!this.data.apiEndpoint;
+        }
+        async onCapture() {
+            var _a;
+            this.captureBtn.rightIcon.spin = true;
+            this.captureBtn.rightIcon.visible = true;
+            try {
+                await this.updateChartData();
+                if ((_a = this._data.chartData) === null || _a === void 0 ? void 0 : _a.length)
+                    await this.onUploadToIPFS();
+            }
+            catch (err) {
+            }
+            finally {
+                this.captureBtn.rightIcon.spin = false;
+                this.captureBtn.rightIcon.visible = false;
+            }
+        }
+        async onUploadToIPFS() {
+            var _a, _b;
+            const result = (_b = (_a = (await components_4.application.uploadData('data.json', this.data.chartData)).data) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b[0];
+            if (result) {
+                this.mdAlert.status = 'success';
+                this.mdAlert.status = 'Success';
+                this.mdAlert.content = 'Upload successfully!';
+                this.mdAlert.showModal();
+                this._data.file = { cid: result.cid, name: result.name };
+            }
+            else {
+                this.mdAlert.status = 'error';
+                this.mdAlert.status = 'Error';
+                this.mdAlert.content = 'Upload failed!';
+                this.mdAlert.showModal();
+            }
+        }
+        async onImportFile(target, files) {
+            const self = this;
+            if (files && files.length > 0) {
+                const file = files[0];
+                this.fileNameLb.caption = `File name: ${file.name || ''}`;
+                this.fileNameLb.visible = true;
+                // this.uploadBtn.visible = false
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = async (event) => {
+                    var _a;
+                    self._data.chartData = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
+                    target.clear();
+                    if (self._data.chartData)
+                        await this.onUploadToIPFS();
+                };
+            }
+            else {
+                this.fileNameLb.visible = false;
+                // this.uploadBtn.visible = true
+            }
+        }
+        async onExportFile() {
+            this.downloadBtn.rightIcon.spin = true;
+            this.downloadBtn.rightIcon.visible = true;
+            try {
+                let chartData = this.data.chartData;
+                if (this.data.mode === index_1.ModeType.LIVE) {
+                    chartData = JSON.stringify(this.data.apiEndpoint ? await (0, index_1.callAPI)(this.data.apiEndpoint) : [], null, 4);
+                }
+                const blob = new Blob([chartData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'data.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            catch (err) {
+            }
+            finally {
+                this.downloadBtn.rightIcon.spin = false;
+                this.downloadBtn.rightIcon.visible = false;
+            }
+        }
+        init() {
+            super.init();
+            const apiEndpoint = this.getAttribute('apiEndpoint', true);
+            const mode = this.getAttribute('mode', true, index_1.ModeType.LIVE);
+            const file = this.getAttribute('file', true);
+            const chartData = this.getAttribute('chartData', true);
+            this.data = { mode, apiEndpoint, file, chartData };
+        }
+        render() {
+            return (this.$render("i-panel", null,
+                this.$render("i-vstack", { gap: '10px' },
+                    this.$render("i-vstack", { gap: '10px' },
+                        this.$render("i-label", { caption: 'Mode' }),
+                        this.$render("i-combo-box", { id: 'modeSelect', items: modeOptions, selectedItem: modeOptions[0], height: 42, width: '100%', class: index_css_1.comboBoxStyle, onChanged: this.onModeChanged })),
+                    this.$render("i-vstack", { gap: '10px' },
+                        this.$render("i-hstack", { gap: 4 },
+                            this.$render("i-label", { caption: 'Api Endpoint' }),
+                            this.$render("i-label", { id: "requiredLb", caption: '*', font: { color: '#ff0000' } })),
+                        this.$render("i-hstack", { verticalAlignment: 'center', gap: '0.5rem' },
+                            this.$render("i-input", { id: 'endpointInput', height: 42, width: '100%', onChanged: this.onUpdateEndpoint }),
+                            this.$render("i-button", { id: 'captureBtn', height: 42, caption: 'Capture Snapshot', background: { color: Theme.colors.primary.main }, font: { color: Theme.colors.primary.contrastText }, rightIcon: { name: 'spinner', spin: false, fill: Theme.colors.primary.contrastText, width: 16, height: 16, visible: false }, class: "capture-btn", enabled: false, onClick: this.onCapture }))),
+                    this.$render("i-vstack", { id: "pnlUpload", gap: '10px' },
+                        this.$render("i-label", { caption: 'Upload' }),
+                        this.$render("i-upload", { id: "uploadBtn", width: "100%", onChanged: this.onImportFile, class: index_css_1.uploadStyle }),
+                        this.$render("i-label", { id: "fileNameLb", visible: false, caption: '' })),
+                    this.$render("i-vstack", { gap: '10px' },
+                        this.$render("i-button", { id: "downloadBtn", margin: { top: 10 }, height: 42, width: "100%", font: { color: Theme.colors.primary.contrastText }, rightIcon: { name: 'spinner', spin: false, fill: Theme.colors.primary.contrastText, width: 16, height: 16, visible: false }, caption: "Download File", onClick: this.onExportFile }))),
+                this.$render("i-alert", { id: "mdAlert" })));
+        }
+    };
+    ScomBarChartData = __decorate([
+        components_4.customModule,
+        (0, components_4.customElements)('i-scom-bar-chart-data')
+    ], ScomBarChartData);
+    exports.default = ScomBarChartData;
+});
+define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@scom/scom-bar-chart/global/index.ts", "@scom/scom-bar-chart/index.css.ts", "@scom/scom-bar-chart/assets.ts", "@scom/scom-bar-chart/data.json.ts", "@scom/scom-bar-chart/config/index.tsx"], function (require, exports, components_5, index_2, index_css_2, assets_1, data_json_1, index_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_5.Styles.Theme.ThemeVars;
+    const currentTheme = components_5.Styles.Theme.currentTheme;
     const options = {
         type: 'object',
         properties: {
@@ -353,7 +647,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             }
         }
     };
-    let ScomBarChart = class ScomBarChart extends components_3.Module {
+    let ScomBarChart = class ScomBarChart extends components_5.Module {
         static async create(options, parent) {
             let self = new this(parent, options);
             await self.ready();
@@ -363,6 +657,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             super(parent, options);
             this.chartData = [];
             this.apiEndpoint = '';
+            this.mode = index_2.ModeType.LIVE;
             this._data = { apiEndpoint: '', title: '', options: undefined };
             this.tag = {};
             this.defaultEdit = true;
@@ -392,11 +687,11 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             const propertiesSchema = {
                 type: 'object',
                 properties: {
-                    apiEndpoint: {
-                        type: 'string',
-                        title: 'API Endpoint',
-                        required: true
-                    },
+                    // apiEndpoint: {
+                    //   type: 'string',
+                    //   title: 'API Endpoint',
+                    //   required: true
+                    // },
                     title: {
                         type: 'string',
                         required: true
@@ -412,11 +707,11 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         getGeneralSchema() {
             const propertiesSchema = {
                 type: 'object',
-                required: ['apiEndpoint', 'title'],
+                required: ['title'],
                 properties: {
-                    apiEndpoint: {
-                        type: 'string'
-                    },
+                    // apiEndpoint: {
+                    //   type: 'string'
+                    // },
                     title: {
                         type: 'string'
                     },
@@ -464,6 +759,75 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         _getActions(propertiesSchema, themeSchema, advancedSchema) {
             const actions = [
                 {
+                    name: 'Data Source',
+                    icon: 'database',
+                    command: (builder, userInputData) => {
+                        let _oldData = { apiEndpoint: '', title: '', options: undefined };
+                        return {
+                            execute: async () => {
+                                _oldData = Object.assign({}, this._data);
+                                if (userInputData) {
+                                    if (advancedSchema) {
+                                        this._data = Object.assign(Object.assign({}, this._data), userInputData);
+                                    }
+                                    else {
+                                        this._data = Object.assign({}, userInputData);
+                                    }
+                                }
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(this._data);
+                                this.setData(this._data);
+                            },
+                            undo: () => {
+                                if (advancedSchema)
+                                    _oldData = Object.assign(Object.assign({}, _oldData), { options: this._data.options });
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(_oldData);
+                                this.setData(_oldData);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    customUI: {
+                        render: (data, onConfirm) => {
+                            const vstack = new components_5.VStack(null, { gap: '1rem' });
+                            const config = new index_3.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.chartData) }));
+                            const hstack = new components_5.HStack(null, {
+                                verticalAlignment: 'center',
+                                horizontalAlignment: 'end'
+                            });
+                            const button = new components_5.Button(null, {
+                                caption: 'Confirm',
+                                width: 'auto',
+                                height: 40,
+                                font: { color: Theme.colors.primary.contrastText }
+                            });
+                            hstack.append(button);
+                            vstack.append(config);
+                            vstack.append(hstack);
+                            button.onClick = async () => {
+                                const { apiEndpoint, file, mode } = config.data;
+                                if (mode === 'Live') {
+                                    if (!apiEndpoint)
+                                        return;
+                                    this._data.apiEndpoint = apiEndpoint;
+                                    this.updateChartData();
+                                }
+                                else {
+                                    if (!(file === null || file === void 0 ? void 0 : file.cid))
+                                        return;
+                                    this.chartData = config.data.chartData ? JSON.parse(config.data.chartData) : [];
+                                    this.onUpdateBlock();
+                                }
+                                if (onConfirm) {
+                                    onConfirm(true, Object.assign(Object.assign({}, this._data), { apiEndpoint, file, mode }));
+                                }
+                            };
+                            return vstack;
+                        }
+                    }
+                },
+                {
                     name: 'Settings',
                     icon: 'cog',
                     command: (builder, userInputData) => {
@@ -497,11 +861,11 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     userInputUISchema: advancedSchema ? undefined : {
                         type: 'VerticalLayout',
                         elements: [
-                            {
-                                type: 'Control',
-                                scope: '#/properties/apiEndpoint',
-                                title: 'API Endpoint'
-                            },
+                            // {
+                            //   type: 'Control',
+                            //   scope: '#/properties/apiEndpoint',
+                            //   title: 'API Endpoint'
+                            // },
                             {
                                 type: 'Control',
                                 scope: '#/properties/title'
@@ -658,6 +1022,27 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.updateTheme();
         }
         async updateChartData() {
+            if (this._data.mode === index_2.ModeType.LIVE)
+                this.renderLiveData();
+            else
+                this.renderSnapshotData();
+        }
+        async renderSnapshotData() {
+            var _a;
+            if ((_a = this._data.file) === null || _a === void 0 ? void 0 : _a.cid) {
+                this.loadingElm.visible = true;
+                const data = await (0, index_2.fetchDataByCid)(this._data.file.cid);
+                this.loadingElm.visible = false;
+                if (data) {
+                    this.chartData = data;
+                    this.onUpdateBlock();
+                    return;
+                }
+            }
+            this.chartData = [];
+            this.onUpdateBlock();
+        }
+        async renderLiveData() {
             if (this._data.apiEndpoint === this.apiEndpoint) {
                 this.onUpdateBlock();
                 return;
@@ -666,7 +1051,11 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.apiEndpoint = apiEndpoint;
             if (apiEndpoint) {
                 this.loadingElm.visible = true;
-                const data = await (0, index_1.callAPI)(apiEndpoint);
+                let data = null;
+                try {
+                    data = await (0, index_2.callAPI)(apiEndpoint);
+                }
+                catch (_a) { }
                 this.loadingElm.visible = false;
                 if (data && this._data.apiEndpoint === apiEndpoint) {
                     this.chartData = data;
@@ -703,13 +1092,13 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             let arr = this.chartData;
             const item = (arr && arr[0]) || {};
             if (groupBy && item[groupBy] !== undefined) {
-                const group = (0, index_1.groupByCategory)(arr, groupBy, key, yColumns[0]);
-                const times = (0, index_1.extractUniqueTimes)(arr, key);
+                const group = (0, index_2.groupByCategory)(arr, groupBy, key, yColumns[0]);
+                const times = (0, index_2.extractUniqueTimes)(arr, key);
                 let groupData = {};
                 const keys = Object.keys(group);
                 keys.map(v => {
-                    const _data = (0, index_1.concatUnique)(times, group[v]);
-                    groupData[v] = (0, index_1.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? new Date(m) : m, _data[m]]));
+                    const _data = (0, index_2.concatUnique)(times, group[v]);
+                    groupData[v] = (0, index_2.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? new Date(m) : m, _data[m]]));
                 });
                 const isPercentage = percentage && groupData[keys[0]] && typeof groupData[keys[0]][0][1] === 'number';
                 _series = keys.map(v => {
@@ -739,7 +1128,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         label: showDataLabels ? {
                             show: true,
                             formatter: function (params) {
-                                return (0, index_1.formatNumber)(params.value);
+                                return (0, index_2.formatNumber)(params.value);
                             }
                         } : undefined,
                         data: _data
@@ -753,7 +1142,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     if (isPercentage && typeof arr[0][col] !== 'number') {
                         isPercentage = false;
                     }
-                    groupData[col] = (0, index_1.groupArrayByKey)(arr.map(v => [type === 'time' ? new Date(v[key]) : col, v[col]]));
+                    groupData[col] = (0, index_2.groupArrayByKey)(arr.map(v => [type === 'time' ? new Date(v[key]) : col, v[col]]));
                 });
                 _series = yColumns.map((col) => {
                     let _data = [];
@@ -782,7 +1171,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         label: showDataLabels ? {
                             show: true,
                             formatter: function (params) {
-                                return (0, index_1.formatNumber)(params.value);
+                                return (0, index_2.formatNumber)(params.value);
                             }
                         } : undefined,
                         data: _data
@@ -827,14 +1216,14 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         return [x, y];
                     },
                     formatter: (params) => {
-                        let res = `<b>${xColumn.type === 'time' ? (0, components_3.moment)(params[0].axisValue).format('YYYY-MM-DD HH:mm') : params[0].axisValue}</b>`;
+                        let res = `<b>${xColumn.type === 'time' ? (0, components_5.moment)(params[0].axisValue).format('YYYY-MM-DD HH:mm') : params[0].axisValue}</b>`;
                         if (_series.length === 1) {
-                            res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${params[0].marker} ${params[0].seriesName}</span> ${params[0].value[1] === null ? '-' : percentage ? (0, index_1.formatNumber)(params[0].value[1], { percentValues: true }) : (0, index_1.formatNumberByFormat)(params[0].value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
+                            res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${params[0].marker} ${params[0].seriesName}</span> ${params[0].value[1] === null ? '-' : percentage ? (0, index_2.formatNumber)(params[0].value[1], { percentValues: true }) : (0, index_2.formatNumberByFormat)(params[0].value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
                         }
                         else {
                             for (const param of params) {
                                 if (param.value[1] !== null) {
-                                    res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${param.marker} ${param.seriesName}</span> ${percentage ? (0, index_1.formatNumber)(param.value[1], { percentValues: true }) : (0, index_1.formatNumberByFormat)(param.value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
+                                    res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${param.marker} ${param.seriesName}</span> ${percentage ? (0, index_2.formatNumber)(param.value[1], { percentValues: true }) : (0, index_2.formatNumberByFormat)(param.value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
                                 }
                             }
                         }
@@ -863,12 +1252,12 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         hideOverlap: true,
                         formatter: (xAxis === null || xAxis === void 0 ? void 0 : xAxis.tickFormat) ? (value, index) => {
                             if (type === 'time') {
-                                return (0, components_3.moment)(value).format(xAxis.tickFormat);
+                                return (0, components_5.moment)(value).format(xAxis.tickFormat);
                             }
                             else {
                                 if (isNaN(value))
                                     return value;
-                                return (0, index_1.formatNumber)(value, { format: xAxis.tickFormat, decimals: 2 });
+                                return (0, index_2.formatNumber)(value, { format: xAxis.tickFormat, decimals: 2 });
                             }
                         } : undefined
                     }
@@ -891,7 +1280,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         fontSize: 10,
                         position: 'end',
                         formatter: (value, index) => {
-                            return (0, index_1.formatNumber)(value, { format: yAxis === null || yAxis === void 0 ? void 0 : yAxis.tickFormat, decimals: 2, percentValues: percentage });
+                            return (0, index_2.formatNumber)(value, { format: yAxis === null || yAxis === void 0 ? void 0 : yAxis.tickFormat, decimals: 2, percentValues: percentage });
                         }
                     },
                     splitNumber: 4
@@ -899,7 +1288,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                 series: _series
             };
             this.pnlChart.clearInnerHTML();
-            const chart = new components_3.BarChart(this.pnlChart, {
+            const chart = new components_5.BarChart(this.pnlChart, {
                 data: _chartData,
                 width: '100%',
                 height: '100%'
@@ -923,7 +1312,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                 darkShadow: false,
                 height: 500
             });
-            this.classList.add(index_css_1.chartStyle);
+            this.classList.add(index_css_2.chartStyle);
             // const { width, height, darkShadow } = this.tag || {};
             // this.width = width || 700;
             // this.height = height || 500;
@@ -945,8 +1334,8 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             });
         }
         render() {
-            return (this.$render("i-vstack", { id: "chartContainer", position: "relative", background: { color: Theme.background.main }, height: "100%", padding: { top: 10, bottom: 10, left: 10, right: 10 }, class: index_css_1.containerStyle },
-                this.$render("i-vstack", { id: "loadingElm", class: "i-loading-overlay" },
+            return (this.$render("i-vstack", { id: "chartContainer", position: "relative", background: { color: Theme.background.main }, height: "100%", padding: { top: 10, bottom: 10, left: 10, right: 10 }, class: index_css_2.containerStyle },
+                this.$render("i-vstack", { id: "loadingElm", class: "i-loading-overlay", visible: false },
                     this.$render("i-vstack", { class: "i-loading-spinner", horizontalAlignment: "center", verticalAlignment: "center" },
                         this.$render("i-icon", { class: "i-loading-spinner_icon", image: { url: assets_1.default.fullPath('img/loading.svg'), width: 36, height: 36 } }))),
                 this.$render("i-vstack", { id: "vStackInfo", width: "100%", maxWidth: "100%", margin: { left: 'auto', right: 'auto', bottom: 10 }, verticalAlignment: "center" },
@@ -956,8 +1345,8 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         }
     };
     ScomBarChart = __decorate([
-        components_3.customModule,
-        (0, components_3.customElements)('i-scom-bar-chart')
+        components_5.customModule,
+        (0, components_5.customElements)('i-scom-bar-chart')
     ], ScomBarChart);
     exports.default = ScomBarChart;
 });
