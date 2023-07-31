@@ -657,7 +657,6 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             super(parent, options);
             this.chartData = [];
             this.apiEndpoint = '';
-            this.mode = index_2.ModeType.LIVE;
             this._data = { apiEndpoint: '', title: '', options: undefined };
             this.tag = {};
             this.defaultEdit = true;
@@ -666,6 +665,8 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             return this._data;
         }
         async setData(data) {
+            if (!(data === null || data === void 0 ? void 0 : data.mode))
+                data.mode = index_2.ModeType.LIVE;
             this._data = data;
             this.updateChartData();
         }
@@ -925,7 +926,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         return {
                             execute: async () => {
                                 var _a;
-                                _oldData = Object.assign({}, (_a = this._data) === null || _a === void 0 ? void 0 : _a.options);
+                                _oldData = JSON.parse(JSON.stringify((_a = this._data) === null || _a === void 0 ? void 0 : _a.options));
                                 if ((userInputData === null || userInputData === void 0 ? void 0 : userInputData.options) !== undefined)
                                     this._data.options = userInputData.options;
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
@@ -933,7 +934,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                                 this.setData(this._data);
                             },
                             undo: () => {
-                                this._data.options = Object.assign({}, _oldData);
+                                this._data.options = JSON.parse(JSON.stringify(_oldData));
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(this._data);
                                 this.setData(this._data);
@@ -1022,17 +1023,18 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.updateTheme();
         }
         async updateChartData() {
-            if (this._data.mode === index_2.ModeType.LIVE)
-                this.renderLiveData();
+            var _a;
+            this.loadingElm.visible = true;
+            if (((_a = this._data) === null || _a === void 0 ? void 0 : _a.mode) === index_2.ModeType.SNAPSHOT)
+                await this.renderSnapshotData();
             else
-                this.renderSnapshotData();
+                await this.renderLiveData();
+            this.loadingElm.visible = false;
         }
         async renderSnapshotData() {
             var _a;
             if ((_a = this._data.file) === null || _a === void 0 ? void 0 : _a.cid) {
-                this.loadingElm.visible = true;
                 const data = await (0, index_2.fetchDataByCid)(this._data.file.cid);
-                this.loadingElm.visible = false;
                 if (data) {
                     this.chartData = data;
                     this.onUpdateBlock();
@@ -1050,18 +1052,16 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             const apiEndpoint = this._data.apiEndpoint;
             this.apiEndpoint = apiEndpoint;
             if (apiEndpoint) {
-                this.loadingElm.visible = true;
                 let data = null;
                 try {
                     data = await (0, index_2.callAPI)(apiEndpoint);
+                    if (data && this._data.apiEndpoint === apiEndpoint) {
+                        this.chartData = data;
+                        this.onUpdateBlock();
+                        return;
+                    }
                 }
                 catch (_a) { }
-                this.loadingElm.visible = false;
-                if (data && this._data.apiEndpoint === apiEndpoint) {
-                    this.chartData = data;
-                    this.onUpdateBlock();
-                    return;
-                }
             }
             this.chartData = [];
             this.onUpdateBlock();
