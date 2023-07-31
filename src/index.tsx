@@ -18,7 +18,7 @@ import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueT
 import { chartStyle, containerStyle } from './index.css';
 import assets from './assets';
 import configData from './data.json';
-import ScomBarChartData from './config/index';
+import ScomChartDataSourceSetup from '@scom/scom-chart-data-source-setup';
 const Theme = Styles.Theme.ThemeVars;
 const currentTheme = Styles.Theme.currentTheme;
 
@@ -285,18 +285,13 @@ export default class ScomBarChart extends Module {
           return {
             execute: async () => {
               _oldData = { ...this._data };
-              if (userInputData) {
-                if (advancedSchema) {
-                  this._data = { ...this._data, ...userInputData };
-                } else {
-                  this._data = { ...userInputData };
-                }
-              }
+              if (userInputData?.mode) this._data.mode = userInputData?.mode;
+              if (userInputData?.file) this._data.file = userInputData?.file;
+              if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
             },
             undo: () => {
-              if (advancedSchema) _oldData = { ..._oldData, options: this._data.options };
               if (builder?.setData) builder.setData(_oldData);
               this.setData(_oldData);
             },
@@ -306,7 +301,7 @@ export default class ScomBarChart extends Module {
         customUI: {
           render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
             const vstack = new VStack(null, {gap: '1rem'});
-            const config = new ScomBarChartData(null, {...this._data, chartData: JSON.stringify(this.chartData)});
+            const config = new ScomChartDataSourceSetup(null, {...this._data, chartData: JSON.stringify(this.chartData)});
             const hstack = new HStack(null, {
               verticalAlignment: 'center',
               horizontalAlignment: 'end'
