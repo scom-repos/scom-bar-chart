@@ -14,11 +14,11 @@ import {
   moment,
   Button
 } from '@ijstech/components';
-import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions, ModeType, fetchDataByCid } from './global/index';
+import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions } from './global/index';
 import { chartStyle, containerStyle } from './index.css';
 import assets from './assets';
 import configData from './data.json';
-import ScomChartDataSourceSetup from '@scom/scom-chart-data-source-setup';
+import ScomChartDataSourceSetup, { ModeType, fetchContentByCID } from '@scom/scom-chart-data-source-setup';
 const Theme = Styles.Theme.ThemeVars;
 const currentTheme = Styles.Theme.currentTheme;
 
@@ -155,7 +155,7 @@ export default class ScomBarChart extends Module {
   private chartData: { [key: string]: string | number }[] = [];
   private apiEndpoint = '';
 
-  private _data: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
+  private _data: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined, mode: ModeType.LIVE };
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -281,7 +281,7 @@ export default class ScomBarChart extends Module {
         name: 'Data Source',
         icon: 'database',
         command: (builder: any, userInputData: any) => {
-          let _oldData: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
+          let _oldData: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined,  mode: ModeType.LIVE };
           return {
             execute: async () => {
               _oldData = { ...this._data };
@@ -338,7 +338,7 @@ export default class ScomBarChart extends Module {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
-          let _oldData: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined };
+          let _oldData: IBarChartConfig = { apiEndpoint: '', title: '', options: undefined,  mode: ModeType.LIVE };
           return {
             execute: async () => {
               _oldData = { ...this._data };
@@ -532,7 +532,7 @@ export default class ScomBarChart extends Module {
 
   private async renderSnapshotData() {
     if (this._data.file?.cid) {
-      const data = await fetchDataByCid(this._data.file.cid);
+      const data = await fetchContentByCID(this._data.file.cid);
       if (data) {
         this.chartData = data;
         this.onUpdateBlock();

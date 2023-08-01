@@ -10,7 +10,10 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": false,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@scom-bar-chart/*": ["src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]

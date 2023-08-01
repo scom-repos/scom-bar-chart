@@ -1,3 +1,5 @@
+import { ModeType } from "@scom/scom-chart-data-source-setup"
+
 export interface IBarChartOptions {
   xColumn?: {
     key: string,
@@ -31,19 +33,14 @@ export interface IBarChartOptions {
   percentage?: boolean
 }
 
-export enum ModeType {
-  LIVE = 'Live',
-  SNAPSHOT = 'Snapshot'
-}
-
 export interface IBarChartConfig {
   apiEndpoint?: string,
   title: string,
   description?: string,
   options: IBarChartOptions,
   file?: {
-    cid?: string,
-    name?: string
+    cid: string,
+    name: string
   },
-  mode?: ModeType
+  mode: ModeType
 }

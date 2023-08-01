@@ -21,17 +21,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("@scom/scom-bar-chart/global/interfaces.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ModeType = void 0;
-    var ModeType;
-    (function (ModeType) {
-        ModeType["LIVE"] = "Live";
-        ModeType["SNAPSHOT"] = "Snapshot";
-    })(ModeType = exports.ModeType || (exports.ModeType = {}));
 });
 define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.fetchDataByCid = exports.readJsonFromFileExplorer = exports.callAPI = exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberWithSeparators = exports.formatNumberByFormat = exports.formatNumber = void 0;
+    exports.callAPI = exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberWithSeparators = exports.formatNumberByFormat = exports.formatNumber = void 0;
     ///<amd-module name='@scom/scom-bar-chart/global/utils.ts'/> 
     const formatNumber = (num, options) => {
         if (num === null)
@@ -166,51 +160,6 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports"], function 
         return [];
     };
     exports.callAPI = callAPI;
-    const readJsonFromFileExplorer = async () => {
-        return new Promise((resolve, reject) => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = () => {
-                const files = input.files;
-                if (files && files.length > 0) {
-                    const file = files[0];
-                    const reader = new FileReader();
-                    reader.readAsText(file, 'UTF-8');
-                    reader.onload = (event) => {
-                        var _a;
-                        resolve((_a = event.target) === null || _a === void 0 ? void 0 : _a.result);
-                    };
-                    reader.onerror = (event) => {
-                        var _a;
-                        reject((_a = event.target) === null || _a === void 0 ? void 0 : _a.error);
-                    };
-                }
-                else {
-                    reject('No file selected');
-                }
-            };
-            input.click();
-        });
-    };
-    exports.readJsonFromFileExplorer = readJsonFromFileExplorer;
-    const _fetchFileContentByCID = async (ipfsCid) => {
-        let res;
-        try {
-            // const ipfsBaseUrl = `${window.location.origin}/ipfs/`;
-            const ipfsBaseUrl = `https://ipfs.scom.dev/ipfs/`;
-            res = await fetch(ipfsBaseUrl + ipfsCid);
-        }
-        catch (err) {
-        }
-        return res;
-    };
-    const fetchDataByCid = async (ipfsCid) => {
-        const res = await _fetchFileContentByCID(ipfsCid);
-        const content = await res.json();
-        return content;
-    };
-    exports.fetchDataByCid = fetchDataByCid;
 });
 define("@scom/scom-bar-chart/global/index.ts", ["require", "exports", "@scom/scom-bar-chart/global/interfaces.ts", "@scom/scom-bar-chart/global/utils.ts"], function (require, exports, interfaces_1, utils_1) {
     "use strict";
@@ -414,7 +363,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             super(parent, options);
             this.chartData = [];
             this.apiEndpoint = '';
-            this._data = { apiEndpoint: '', title: '', options: undefined };
+            this._data = { apiEndpoint: '', title: '', options: undefined, mode: scom_chart_data_source_setup_1.ModeType.LIVE };
             this.tag = {};
             this.defaultEdit = true;
         }
@@ -423,7 +372,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         }
         async setData(data) {
             if (!(data === null || data === void 0 ? void 0 : data.mode))
-                data.mode = index_1.ModeType.LIVE;
+                data.mode = scom_chart_data_source_setup_1.ModeType.LIVE;
             this._data = data;
             this.updateChartData();
         }
@@ -520,7 +469,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     name: 'Data Source',
                     icon: 'database',
                     command: (builder, userInputData) => {
-                        let _oldData = { apiEndpoint: '', title: '', options: undefined };
+                        let _oldData = { apiEndpoint: '', title: '', options: undefined, mode: scom_chart_data_source_setup_1.ModeType.LIVE };
                         return {
                             execute: async () => {
                                 _oldData = Object.assign({}, this._data);
@@ -585,7 +534,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     name: 'Settings',
                     icon: 'cog',
                     command: (builder, userInputData) => {
-                        let _oldData = { apiEndpoint: '', title: '', options: undefined };
+                        let _oldData = { apiEndpoint: '', title: '', options: undefined, mode: scom_chart_data_source_setup_1.ModeType.LIVE };
                         return {
                             execute: async () => {
                                 _oldData = Object.assign({}, this._data);
@@ -778,7 +727,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         async updateChartData() {
             var _a;
             this.loadingElm.visible = true;
-            if (((_a = this._data) === null || _a === void 0 ? void 0 : _a.mode) === index_1.ModeType.SNAPSHOT)
+            if (((_a = this._data) === null || _a === void 0 ? void 0 : _a.mode) === scom_chart_data_source_setup_1.ModeType.SNAPSHOT)
                 await this.renderSnapshotData();
             else
                 await this.renderLiveData();
@@ -787,7 +736,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         async renderSnapshotData() {
             var _a;
             if ((_a = this._data.file) === null || _a === void 0 ? void 0 : _a.cid) {
-                const data = await (0, index_1.fetchDataByCid)(this._data.file.cid);
+                const data = await (0, scom_chart_data_source_setup_1.fetchContentByCID)(this._data.file.cid);
                 if (data) {
                     this.chartData = data;
                     this.onUpdateBlock();

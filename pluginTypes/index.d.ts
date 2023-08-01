@@ -1,5 +1,6 @@
 /// <amd-module name="@scom/scom-bar-chart/global/interfaces.ts" />
 declare module "@scom/scom-bar-chart/global/interfaces.ts" {
+    import { ModeType } from "@scom/scom-chart-data-source-setup";
     export interface IBarChartOptions {
         xColumn?: {
             key: string;
@@ -32,20 +33,16 @@ declare module "@scom/scom-bar-chart/global/interfaces.ts" {
         showDataLabels?: boolean;
         percentage?: boolean;
     }
-    export enum ModeType {
-        LIVE = "Live",
-        SNAPSHOT = "Snapshot"
-    }
     export interface IBarChartConfig {
         apiEndpoint?: string;
         title: string;
         description?: string;
         options: IBarChartOptions;
         file?: {
-            cid?: string;
-            name?: string;
+            cid: string;
+            name: string;
         };
-        mode?: ModeType;
+        mode: ModeType;
     }
 }
 /// <amd-module name="@scom/scom-bar-chart/global/utils.ts" />
@@ -74,8 +71,6 @@ declare module "@scom/scom-bar-chart/global/utils.ts" {
         [key: string]: any;
     }) => {};
     export const callAPI: (apiEndpoint: string) => Promise<any>;
-    export const readJsonFromFileExplorer: () => Promise<string>;
-    export const fetchDataByCid: (ipfsCid: string) => Promise<any>;
 }
 /// <amd-module name="@scom/scom-bar-chart/global/index.ts" />
 declare module "@scom/scom-bar-chart/global/index.ts" {
