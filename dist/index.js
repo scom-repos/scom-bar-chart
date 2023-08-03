@@ -362,7 +362,6 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         constructor(parent, options) {
             super(parent, options);
             this.chartData = [];
-            this.apiEndpoint = '';
             this._data = { apiEndpoint: '', title: '', options: undefined, mode: scom_chart_data_source_setup_1.ModeType.LIVE };
             this.tag = {};
             this.defaultEdit = true;
@@ -510,18 +509,10 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                             vstack.append(hstack);
                             button.onClick = async () => {
                                 const { apiEndpoint, file, mode } = config.data;
-                                if (mode === 'Live') {
-                                    if (!apiEndpoint)
-                                        return;
-                                    this._data.apiEndpoint = apiEndpoint;
-                                    this.updateChartData();
-                                }
-                                else {
-                                    if (!(file === null || file === void 0 ? void 0 : file.cid))
-                                        return;
-                                    this.chartData = config.data.chartData ? JSON.parse(config.data.chartData) : [];
-                                    this.onUpdateBlock();
-                                }
+                                if (mode === scom_chart_data_source_setup_1.ModeType.LIVE && !apiEndpoint)
+                                    return;
+                                if (mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT && !(file === null || file === void 0 ? void 0 : file.cid))
+                                    return;
                                 if (onConfirm) {
                                     onConfirm(true, Object.assign(Object.assign({}, this._data), { apiEndpoint, file, mode }));
                                 }
@@ -736,28 +727,25 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         async renderSnapshotData() {
             var _a;
             if ((_a = this._data.file) === null || _a === void 0 ? void 0 : _a.cid) {
-                const data = await (0, scom_chart_data_source_setup_1.fetchContentByCID)(this._data.file.cid);
-                if (data) {
-                    this.chartData = data;
-                    this.onUpdateBlock();
-                    return;
+                try {
+                    const data = await (0, scom_chart_data_source_setup_1.fetchContentByCID)(this._data.file.cid);
+                    if (data) {
+                        this.chartData = data;
+                        this.onUpdateBlock();
+                        return;
+                    }
                 }
+                catch (_b) { }
             }
             this.chartData = [];
             this.onUpdateBlock();
         }
         async renderLiveData() {
-            if (this._data.apiEndpoint === this.apiEndpoint) {
-                this.onUpdateBlock();
-                return;
-            }
             const apiEndpoint = this._data.apiEndpoint;
-            this.apiEndpoint = apiEndpoint;
             if (apiEndpoint) {
-                let data = null;
                 try {
-                    data = await (0, index_1.callAPI)(apiEndpoint);
-                    if (data && this._data.apiEndpoint === apiEndpoint) {
+                    const data = await (0, index_1.callAPI)(apiEndpoint);
+                    if (data) {
                         this.chartData = data;
                         this.onUpdateBlock();
                         return;
