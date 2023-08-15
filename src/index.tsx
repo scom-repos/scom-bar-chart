@@ -232,32 +232,32 @@ export default class ScomBarChart extends Module {
         userInputDataSchema: themeSchema
       }
     ]
-    if (advancedSchema) {
-      const advanced = {
-        name: 'Advanced',
-        icon: 'sliders-h',
-        command: (builder: any, userInputData: any) => {
-          let _oldData: IBarChartOptions = {};
-          return {
-            execute: async () => {
-              _oldData = JSON.parse(JSON.stringify(this._data?.options));
-              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
-              if (builder?.setData) builder.setData(this._data);
-              this.setData(this._data);
-            },
-            undo: () => {
-              this._data.options = JSON.parse(JSON.stringify(_oldData));
-              if (builder?.setData) builder.setData(this._data);
-              this.setData(this._data);
-            },
-            redo: () => { }
-          }
-        },
-        userInputDataSchema: advancedSchema,
-        userInputUISchema: builderSchema.advanced.uiSchema
-      }
-      actions.push(advanced);
-    }
+    // if (advancedSchema) {
+    //   const advanced = {
+    //     name: 'Advanced',
+    //     icon: 'sliders-h',
+    //     command: (builder: any, userInputData: any) => {
+    //       let _oldData: IBarChartOptions = {};
+    //       return {
+    //         execute: async () => {
+    //           _oldData = JSON.parse(JSON.stringify(this._data?.options));
+    //           if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+    //           if (builder?.setData) builder.setData(this._data);
+    //           this.setData(this._data);
+    //         },
+    //         undo: () => {
+    //           this._data.options = JSON.parse(JSON.stringify(_oldData));
+    //           if (builder?.setData) builder.setData(this._data);
+    //           this.setData(this._data);
+    //         },
+    //         redo: () => { }
+    //       }
+    //     },
+    //     userInputDataSchema: advancedSchema,
+    //     userInputUISchema: builderSchema.advanced.uiSchema as any
+    //   }
+    //   actions.push(advanced);
+    // }
     return actions
   }
 
