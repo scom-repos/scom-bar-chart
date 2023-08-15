@@ -1,3 +1,5 @@
+import { DataSource } from "@scom/scom-chart-data-source-setup";
+
 export const formatNumber = (num: number, options?: { format?: string, decimals?: number, percentValues?: boolean }) => {
   if (num === null) return '-';
   const { decimals, format, percentValues } = options || {};
@@ -111,15 +113,21 @@ export const concatUnique = (obj1: { [key: string]: any }, obj2: { [key: string]
   }, {});
 }
 
-export const callAPI = async (apiEndpoint: string) => {
-  if (!apiEndpoint) return [];
+export const callAPI = async (dataSource: string, queryId: string) => {
+  if (!dataSource) return [];
   try {
+    let apiEndpoint = '';
+    switch (dataSource) {
+      case DataSource.Dune:
+        apiEndpoint = `/dune/query/${queryId}`;
+        break;
+    }
+    if (!apiEndpoint) return [];
     const response = await fetch(apiEndpoint);
-    const jsonData = await response.json();
+    const jsonData = await response.json(); 
     return jsonData.result.rows || [];
   } catch (error) {
     console.log(error);
   }
   return [];
 }
-

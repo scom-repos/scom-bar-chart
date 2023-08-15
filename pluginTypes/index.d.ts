@@ -34,7 +34,8 @@ declare module "@scom/scom-bar-chart/global/interfaces.ts" {
         percentage?: boolean;
     }
     export interface IBarChartConfig {
-        apiEndpoint?: string;
+        dataSource: string;
+        queryId: string;
         title: string;
         description?: string;
         options: IBarChartOptions;
@@ -70,7 +71,7 @@ declare module "@scom/scom-bar-chart/global/utils.ts" {
     }, obj2: {
         [key: string]: any;
     }) => {};
-    export const callAPI: (apiEndpoint: string) => Promise<any>;
+    export const callAPI: (dataSource: string, queryId: string) => Promise<any>;
 }
 /// <amd-module name="@scom/scom-bar-chart/global/index.ts" />
 declare module "@scom/scom-bar-chart/global/index.ts" {
@@ -110,7 +111,8 @@ declare module "@scom/scom-bar-chart/assets.ts" {
 declare module "@scom/scom-bar-chart/data.json.ts" {
     const _default_1: {
         defaultBuilderData: {
-            apiEndpoint: string;
+            dataSource: string;
+            queryId: string;
             title: string;
             options: {
                 xColumn: {
