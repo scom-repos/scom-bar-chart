@@ -691,8 +691,10 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     customUI: {
                         render: (data, onConfirm, onChange) => {
                             const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const dataSourceSetup = new scom_chart_data_source_setup_2.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.chartData), onCustomDataChanged: async (data) => {
-                                    onChange(true, Object.assign(Object.assign({}, this._data), data));
+                            const dataSourceSetup = new scom_chart_data_source_setup_2.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.chartData), onCustomDataChanged: async (dataSourceSetupData) => {
+                                    if (onChange) {
+                                        onChange(true, Object.assign(Object.assign({}, this._data), dataSourceSetupData));
+                                    }
                                 } }));
                             const hstackBtnConfirm = new components_4.HStack(null, {
                                 verticalAlignment: 'center',
