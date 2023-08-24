@@ -35,7 +35,8 @@ export interface IBarChartOptions {
 
 export interface IBarChartConfig {
   dataSource: string;
-  queryId: string;
+  queryId?: string;
+  apiEndpoint?: string;
   title: string,
   description?: string,
   options: IBarChartOptions,
@@ -44,4 +45,10 @@ export interface IBarChartConfig {
     name: string
   },
   mode: ModeType
+}
+
+export interface IFetchDataOptions {
+  dataSource: string;
+  queryId?: string;
+  apiEndpoint?: string;
 }
