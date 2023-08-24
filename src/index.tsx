@@ -40,6 +40,7 @@ declare global {
 const DefaultData: IBarChartConfig = {
   dataSource: DataSource.Dune, 
   queryId: '', 
+  apiEndpoint: '',
   title: '', 
   options: undefined, 
   mode: ModeType.LIVE 
@@ -59,9 +60,6 @@ export default class ScomBarChart extends Module {
   private _data: IBarChartConfig = DefaultData;
   tag: any = {};
   defaultEdit: boolean = true;
-  readonly onConfirm: () => Promise<void>;
-  readonly onDiscard: () => Promise<void>;
-  readonly onEdit: () => Promise<void>;
 
   static async create(options?: ScomBarChartElement, parent?: Container) {
     let self = new this(parent, options);
@@ -143,6 +141,7 @@ export default class ScomBarChart extends Module {
               if (userInputData?.file) this._data.file = userInputData?.file;
               if (userInputData?.dataSource) this._data.dataSource = userInputData?.dataSource;
               if (userInputData?.queryId) this._data.queryId = userInputData?.queryId;
+              if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
               if (userInputData?.options !== undefined) this._data.options = userInputData.options;
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
@@ -190,19 +189,15 @@ export default class ScomBarChart extends Module {
             vstack.append(hstackBtnConfirm);
             if (onChange) {
               dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
-                const { dataSource, queryId, file, mode } = dataSourceSetup.data;
                 onChange(true, {
                   ...this._data, 
                   ...optionsFormData,
-                  dataSource, 
-                  queryId,
-                  file, 
-                  mode
+                  ...dataSourceSetup.data
                 });
               }
             }
             button.onClick = async () => {
-              const { dataSource, queryId, file, mode } = dataSourceSetup.data;
+              const { dataSource, file, mode } = dataSourceSetup.data;
               if (mode === ModeType.LIVE && !dataSource) return;
               if (mode === ModeType.SNAPSHOT && !file?.cid) return;
               if (onConfirm) {
@@ -210,10 +205,7 @@ export default class ScomBarChart extends Module {
                 onConfirm(true, {
                   ...this._data, 
                   ...optionsFormData,
-                  dataSource, 
-                  queryId,
-                  file, 
-                  mode
+                  ...dataSourceSetup.data
                 });
               }
             }
@@ -373,10 +365,13 @@ export default class ScomBarChart extends Module {
 
   private async renderLiveData() {
     const dataSource = this._data.dataSource;
-    const queryId = this._data.queryId;
-    if (dataSource && queryId) {
+    if (dataSource) {
       try {
-        const data = await callAPI(dataSource, queryId);
+        const data = await callAPI({
+          dataSource,
+          queryId: this._data.queryId,
+          apiEndpoint: this._data.apiEndpoint
+        });
         if (data) {
           this.chartData = data;
           this.onUpdateBlock();
