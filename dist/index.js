@@ -22,51 +22,62 @@ define("@scom/scom-bar-chart/global/interfaces.ts", ["require", "exports"], func
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@scom/scom-chart-data-source-setup"], function (require, exports, scom_chart_data_source_setup_1) {
+define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@scom/scom-chart-data-source-setup", "@ijstech/eth-wallet"], function (require, exports, scom_chart_data_source_setup_1, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.callAPI = exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberWithSeparators = exports.formatNumberByFormat = exports.formatNumber = void 0;
+    exports.callAPI = exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberWithSeparators = exports.formatNumberByFormat = exports.formatNumber = exports.isNumeric = void 0;
+    const isNumeric = (value) => {
+        if (value instanceof eth_wallet_1.BigNumber) {
+            return !value.isNaN() && value.isFinite();
+        }
+        if (typeof value === 'string') {
+            const parsed = new eth_wallet_1.BigNumber(value);
+            return !parsed.isNaN() && parsed.isFinite();
+        }
+        return !isNaN(value) && isFinite(value);
+    };
+    exports.isNumeric = isNumeric;
     const formatNumber = (num, options) => {
         if (num === null)
             return '-';
         const { decimals, format, percentValues } = options || {};
         if (percentValues) {
-            return `${(0, exports.formatNumberWithSeparators)(num, 2)}%`;
+            return `${(0, exports.formatNumberWithSeparators)(num, { precision: 2 })}%`;
         }
         if (format) {
             return (0, exports.formatNumberByFormat)(num, format);
         }
         const absNum = Math.abs(num);
         if (absNum >= 1000000000) {
-            return (0, exports.formatNumberWithSeparators)((num / 1000000000), decimals || 3) + 'B';
+            return (0, exports.formatNumberWithSeparators)((num / 1000000000), { precision: decimals || 3 }) + 'B';
         }
         if (absNum >= 1000000) {
-            return (0, exports.formatNumberWithSeparators)((num / 1000000), decimals || 3) + 'M';
+            return (0, exports.formatNumberWithSeparators)((num / 1000000), { precision: decimals || 3 }) + 'M';
         }
         if (absNum >= 1000) {
-            return (0, exports.formatNumberWithSeparators)((num / 1000), decimals || 3) + 'K';
+            return (0, exports.formatNumberWithSeparators)((num / 1000), { precision: decimals || 3 }) + 'K';
         }
         if (absNum < 0.0000001) {
-            return (0, exports.formatNumberWithSeparators)(num);
+            return (0, exports.formatNumberWithSeparators)(num, { precision: 0 });
         }
         if (absNum < 0.00001) {
-            return (0, exports.formatNumberWithSeparators)(num, 6);
+            return (0, exports.formatNumberWithSeparators)(num, { precision: 6 });
         }
         if (absNum < 0.001) {
-            return (0, exports.formatNumberWithSeparators)(num, 4);
+            return (0, exports.formatNumberWithSeparators)(num, { precision: 4 });
         }
-        return (0, exports.formatNumberWithSeparators)(num, 2);
+        return (0, exports.formatNumberWithSeparators)(num, { precision: 2 });
     };
     exports.formatNumber = formatNumber;
     const formatNumberByFormat = (num, format, separators) => {
         if (!format)
-            return (0, exports.formatNumberWithSeparators)(num);
+            return (0, exports.formatNumberWithSeparators)(num, { precision: 0 });
         const decimalPlaces = format.split('.')[1] ? format.split('.').length : 0;
         if (format.includes('%')) {
-            return (0, exports.formatNumberWithSeparators)((num * 100), decimalPlaces) + '%';
+            return (0, exports.formatNumberWithSeparators)((num * 100), { precision: decimalPlaces }) + '%';
         }
         const currencySymbol = format.indexOf('$') !== -1 ? '$' : '';
-        const roundedNum = (0, exports.formatNumberWithSeparators)(num, decimalPlaces);
+        const roundedNum = (0, exports.formatNumberWithSeparators)(num, { precision: decimalPlaces });
         if (separators || !(format.includes('m') || format.includes('a'))) {
             return format.indexOf('$') === 0 ? `${currencySymbol}${roundedNum}` : `${roundedNum}${currencySymbol}`;
         }
@@ -76,20 +87,31 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@scom/sco
         return `${currencySymbol}${integerPart}`;
     };
     exports.formatNumberByFormat = formatNumberByFormat;
-    const formatNumberWithSeparators = (value, precision) => {
-        if (!value)
-            value = 0;
-        if (precision || precision === 0) {
+    const formatNumberWithSeparators = (value, options) => {
+        let bigValue;
+        if (value instanceof eth_wallet_1.BigNumber) {
+            bigValue = value;
+        }
+        else {
+            bigValue = new eth_wallet_1.BigNumber(value);
+        }
+        if (bigValue.isNaN() || !bigValue.isFinite()) {
+            return '0';
+        }
+        if (options.precision || options.precision === 0) {
             let outputStr = '';
-            if (value >= 1) {
-                outputStr = value.toLocaleString('en-US', { maximumFractionDigits: precision });
+            if (bigValue.gte(1)) {
+                outputStr = bigValue.toFormat(options.precision, options.roundingMode || eth_wallet_1.BigNumber.ROUND_HALF_CEIL);
             }
             else {
-                outputStr = value.toLocaleString('en-US', { maximumSignificantDigits: precision });
+                outputStr = bigValue.toNumber().toLocaleString('en-US', { maximumSignificantDigits: options.precision || 2 });
+            }
+            if (outputStr.length > 18) {
+                outputStr = outputStr.substring(0, 18) + '...';
             }
             return outputStr;
         }
-        return value.toLocaleString('en-US');
+        return bigValue.toFormat();
     };
     exports.formatNumberWithSeparators = formatNumberWithSeparators;
     const groupArrayByKey = (arr) => {
@@ -944,7 +966,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     const _data = (0, index_1.concatUnique)(times, group[v]);
                     groupData[v] = (0, index_1.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? new Date(m) : m, _data[m]]));
                 });
-                const isPercentage = percentage && groupData[keys[0]] && typeof groupData[keys[0]][0][1] === 'number';
+                const isPercentage = percentage && groupData[keys[0]] && (0, index_1.isNumeric)(groupData[keys[0]][0][1]);
                 _series = keys.map(v => {
                     const seriesOpt = seriesOptions === null || seriesOptions === void 0 ? void 0 : seriesOptions.find(f => f.key === v);
                     let _data = [];
@@ -983,7 +1005,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                 let groupData = {};
                 let isPercentage = percentage && arr.length > 0;
                 yColumns.map(col => {
-                    if (isPercentage && typeof arr[0][col] !== 'number') {
+                    if (isPercentage && !(0, index_1.isNumeric)(arr[0][col])) {
                         isPercentage = false;
                     }
                     groupData[col] = (0, index_1.groupArrayByKey)(arr.map(v => [type === 'time' ? new Date(v[key]) : col, v[col]]));
