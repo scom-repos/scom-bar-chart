@@ -12,7 +12,8 @@ import {
   Panel,
   BarChart,
   moment,
-  Button
+  Button,
+  IUISchema
 } from '@ijstech/components';
 import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions, isNumeric } from './global/index';
 import { chartStyle, containerStyle } from './index.css';
@@ -97,37 +98,56 @@ export default class ScomBarChart extends Module {
     this.onUpdateBlock();
   }
 
-  private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
+  private _getActions(dataSchema: IDataSchema, uiSchema: IUISchema, advancedSchema?: IDataSchema) {
     const builderSchema = getBuilderSchema();
     const actions = [
       {
-        name: 'General',
-        icon: 'cog',
+        name: 'Edit',
+        icon: 'edit',
         command: (builder: any, userInputData: any) => {
-          let _oldData: IBarChartConfig = DefaultData;
+          let oldData: IBarChartConfig = DefaultData;
+          let oldTag = {};
           return {
             execute: async () => {
-              _oldData = { ...this._data };
-              if (userInputData) {
-                if (advancedSchema) {
-                  this._data = { ...this._data, ...userInputData };
-                } else {
-                  this._data = { ...userInputData };
-                }
+              oldData = JSON.parse(JSON.stringify(this._data));
+              const {
+                title,
+                description,
+                options,
+                ...themeSettings
+              } = userInputData;
+
+              const generalSettings = {
+                title,
+                description,
+              };
+
+              if (advancedSchema) {
+                this._data = { ...this._data, ...generalSettings };
+              } else {
+                this._data = { ...generalSettings as IBarChartConfig, options };
               }
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
+
+              oldTag = JSON.parse(JSON.stringify(this.tag));
+              if (builder?.setTag) builder.setTag(themeSettings);
+              else this.setTag(themeSettings);
             },
             undo: () => {
-              if (advancedSchema) _oldData = { ..._oldData, options: this._data.options };
-              if (builder?.setData) builder.setData(_oldData);
-              this.setData(_oldData);
+              if (advancedSchema) oldData = { ...oldData, options: this._data.options };
+              if (builder?.setData) builder.setData(oldData);
+              this.setData(oldData);
+
+              this.tag = JSON.parse(JSON.stringify(oldTag));
+              if (builder?.setTag) builder.setTag(this.tag);
+              else this.setTag(this.tag);
             },
             redo: () => { }
           }
         },
-        userInputDataSchema: propertiesSchema,
-        userInputUISchema: advancedSchema ? undefined : builderSchema.general.uiSchema
+        userInputDataSchema: dataSchema,
+        userInputUISchema: uiSchema
       },
       {
         name: 'Data',
@@ -212,29 +232,6 @@ export default class ScomBarChart extends Module {
             return vstack;
           }
         }
-      },
-      {
-        name: 'Theme Settings',
-        icon: 'palette',
-        command: (builder: any, userInputData: any) => {
-          let oldTag = {};
-          return {
-            execute: async () => {
-              if (!userInputData) return;
-              oldTag = JSON.parse(JSON.stringify(this.tag));
-              if (builder?.setTag) builder.setTag(userInputData);
-              else this.setTag(userInputData);
-            },
-            undo: () => {
-              if (!userInputData) return;
-              this.tag = JSON.parse(JSON.stringify(oldTag));
-              if (builder?.setTag) builder.setTag(this.tag);
-              else this.setTag(this.tag);
-            },
-            redo: () => { }
-          }
-        },
-        userInputDataSchema: themeSchema
       }
     ]
     // if (advancedSchema) {
@@ -274,10 +271,10 @@ export default class ScomBarChart extends Module {
         target: 'Builders',
         getActions: () => {
           const builderSchema = getBuilderSchema();
-          const generalSchema = builderSchema.general.dataSchema as IDataSchema;
-          const themeSchema = builderSchema.theme.dataSchema as IDataSchema;
+          const dataSchema = builderSchema.dataSchema as IDataSchema;
+          const uiSchema = builderSchema.uiSchema as IUISchema;
           const advancedSchema = builderSchema.advanced.dataSchema as any;
-          return this._getActions(generalSchema, themeSchema, advancedSchema);
+          return this._getActions(dataSchema, uiSchema, advancedSchema);
         },
         getData: this.getData.bind(this),
         setData: async (data: IBarChartConfig) => {
@@ -292,9 +289,9 @@ export default class ScomBarChart extends Module {
         target: 'Embedders',
         getActions: () => {
           const embedderSchema = getEmbedderSchema();
-          const generalSchema = embedderSchema.general.dataSchema as any;
-          const themeSchema = embedderSchema.theme.dataSchema as IDataSchema;
-          return this._getActions(generalSchema, themeSchema)
+          const dataSchema = embedderSchema.dataSchema as any;
+          const uiSchema = embedderSchema.uiSchema as IUISchema;
+          return this._getActions(dataSchema, uiSchema);
         },
         getLinkParams: () => {
           const data = this._data || {};

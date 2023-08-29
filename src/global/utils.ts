@@ -41,12 +41,15 @@ export const formatNumber = (num: number, options?: { format?: string, decimals?
   if (absNum < 0.001) {
     return formatNumberWithSeparators(num, { precision: 4 });
   }
+  if (absNum < 1) {
+    return formatNumberWithSeparators(num, { precision: 4 });
+  }
   return formatNumberWithSeparators(num, { precision: 2 });
 }
 
 export const formatNumberByFormat = (num: number, format: string, separators?: boolean) => {
   if (!format) return formatNumberWithSeparators(num, { precision: 0 });
-  const decimalPlaces = format.split('.')[1] ? format.split('.').length : 0;
+  const decimalPlaces = format.split('.')[1] ? format.split('.')[1].length : 0;
   if (format.includes('%')) {
     return formatNumberWithSeparators((num * 100), { precision: decimalPlaces }) + '%';
   }
