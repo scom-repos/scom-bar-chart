@@ -15,11 +15,11 @@ import {
   Button,
   IUISchema
 } from '@ijstech/components';
-import { IBarChartConfig, callAPI, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions, isNumeric } from './global/index';
+import { IBarChartConfig, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions, isNumeric } from './global/index';
 import { chartStyle, containerStyle } from './index.css';
 import assets from './assets';
 import configData from './data.json';
-import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, DataSource } from '@scom/scom-chart-data-source-setup';
+import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, callAPI, DataSource } from '@scom/scom-chart-data-source-setup';
 import { getBuilderSchema, getEmbedderSchema } from './formSchema';
 import ScomBarChartDataOptionsForm from './dataOptionsForm';
 const Theme = Styles.Theme.ThemeVars;
@@ -39,12 +39,12 @@ declare global {
 }
 
 const DefaultData: IBarChartConfig = {
-  dataSource: DataSource.Dune, 
-  queryId: '', 
+  dataSource: DataSource.Dune,
+  queryId: '',
   apiEndpoint: '',
-  title: '', 
-  options: undefined, 
-  mode: ModeType.LIVE 
+  title: '',
+  options: undefined,
+  mode: ModeType.LIVE
 };
 
 @customModule
@@ -56,6 +56,7 @@ export default class ScomBarChart extends Module {
   private loadingElm: Panel;
   private lbTitle: Label;
   private lbDescription: Label;
+  private columnNames: string[] = [];
   private chartData: { [key: string]: string | number }[] = [];
 
   private _data: IBarChartConfig = DefaultData;
@@ -99,7 +100,7 @@ export default class ScomBarChart extends Module {
   }
 
   private _getActions(dataSchema: IDataSchema, uiSchema: IUISchema, advancedSchema?: IDataSchema) {
-    const builderSchema = getBuilderSchema();
+    const builderSchema = getBuilderSchema(this.columnNames);
     const actions = [
       {
         name: 'Edit',
@@ -175,14 +176,14 @@ export default class ScomBarChart extends Module {
         },
         customUI: {
           render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => {
-            const vstack = new VStack(null, {gap: '1rem'});
+            const vstack = new VStack(null, { gap: '1rem' });
             const dataSourceSetup = new ScomChartDataSourceSetup(null, {
-              ...this._data, 
+              ...this._data,
               chartData: JSON.stringify(this.chartData),
               onCustomDataChanged: async (dataSourceSetupData: any) => {
                 if (onChange) {
                   onChange(true, {
-                    ...this._data, 
+                    ...this._data,
                     ...dataSourceSetupData
                   });
                 }
@@ -196,7 +197,7 @@ export default class ScomBarChart extends Module {
               caption: 'Confirm',
               width: 'auto',
               height: 40,
-              font: {color: Theme.colors.primary.contrastText}
+              font: { color: Theme.colors.primary.contrastText }
             });
             hstackBtnConfirm.append(button);
             vstack.append(dataSourceSetup);
@@ -210,7 +211,7 @@ export default class ScomBarChart extends Module {
             if (onChange) {
               dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
                 onChange(true, {
-                  ...this._data, 
+                  ...this._data,
                   ...optionsFormData,
                   ...dataSourceSetup.data
                 });
@@ -223,7 +224,7 @@ export default class ScomBarChart extends Module {
               if (onConfirm) {
                 const optionsFormData = await dataOptionsForm.refreshFormData();
                 onConfirm(true, {
-                  ...this._data, 
+                  ...this._data,
                   ...optionsFormData,
                   ...dataSourceSetup.data
                 });
@@ -270,7 +271,7 @@ export default class ScomBarChart extends Module {
         name: 'Builder Configurator',
         target: 'Builders',
         getActions: () => {
-          const builderSchema = getBuilderSchema();
+          const builderSchema = getBuilderSchema(this.columnNames);
           const dataSchema = builderSchema.dataSchema as IDataSchema;
           const uiSchema = builderSchema.uiSchema as IUISchema;
           const advancedSchema = builderSchema.advanced.dataSchema as any;
@@ -288,7 +289,7 @@ export default class ScomBarChart extends Module {
         name: 'Emdedder Configurator',
         target: 'Embedders',
         getActions: () => {
-          const embedderSchema = getEmbedderSchema();
+          const embedderSchema = getEmbedderSchema(this.columnNames);
           const dataSchema = embedderSchema.dataSchema as any;
           const uiSchema = embedderSchema.uiSchema as IUISchema;
           return this._getActions(dataSchema, uiSchema);
@@ -350,18 +351,21 @@ export default class ScomBarChart extends Module {
       try {
         const data = await fetchContentByCID(this._data.file.cid);
         if (data) {
-          this.chartData = data;
+          const { metadata, rows } = data;
+          this.chartData = rows;
+          this.columnNames = metadata?.column_names || [];
           this.onUpdateBlock();
           return;
         }
-      } catch {}
+      } catch { }
     }
     this.chartData = [];
+    this.columnNames = [];
     this.onUpdateBlock();
   }
 
   private async renderLiveData() {
-    const dataSource = this._data.dataSource;
+    const dataSource = this._data.dataSource as DataSource;
     if (dataSource) {
       try {
         const data = await callAPI({
@@ -370,13 +374,16 @@ export default class ScomBarChart extends Module {
           apiEndpoint: this._data.apiEndpoint
         });
         if (data) {
-          this.chartData = data;
+          const { metadata, rows } = data;
+          this.chartData = rows;
+          this.columnNames = metadata?.column_names || [];
           this.onUpdateBlock();
           return;
         }
-      } catch {}
+      } catch { }
     }
     this.chartData = [];
+    this.columnNames = [];
     this.onUpdateBlock();
   }
 
