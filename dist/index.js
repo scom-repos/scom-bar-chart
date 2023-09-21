@@ -33,10 +33,10 @@ define("@scom/scom-bar-chart/global/interfaces.ts", ["require", "exports"], func
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
+define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/eth-wallet", "@ijstech/components"], function (require, exports, eth_wallet_1, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberWithSeparators = exports.formatNumberByFormat = exports.formatNumber = exports.isNumeric = void 0;
+    exports.concatUnique = exports.extractUniqueTimes = exports.groupByCategory = exports.groupArrayByKey = exports.formatNumberByFormat = exports.formatNumber = exports.isNumeric = void 0;
     const isNumeric = (value) => {
         if (value instanceof eth_wallet_1.BigNumber) {
             return !value.isNaN() && value.isFinite();
@@ -53,45 +53,45 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/
             return '-';
         const { decimals, format, percentValues } = options || {};
         if (percentValues) {
-            return `${(0, exports.formatNumberWithSeparators)(num, { precision: 2 })}%`;
+            return `${components_1.FormatUtils.formatNumber(num, { decimalFigures: 2 })}%`;
         }
         if (format) {
             return (0, exports.formatNumberByFormat)(num, format);
         }
         const absNum = Math.abs(num);
         if (absNum >= 1000000000) {
-            return (0, exports.formatNumberWithSeparators)((num / 1000000000), { precision: decimals || 3 }) + 'B';
+            return components_1.FormatUtils.formatNumber((num / 1000000000), { decimalFigures: decimals || 3 }) + 'B';
         }
         if (absNum >= 1000000) {
-            return (0, exports.formatNumberWithSeparators)((num / 1000000), { precision: decimals || 3 }) + 'M';
+            return components_1.FormatUtils.formatNumber((num / 1000000), { decimalFigures: decimals || 3 }) + 'M';
         }
         if (absNum >= 1000) {
-            return (0, exports.formatNumberWithSeparators)((num / 1000), { precision: decimals || 3 }) + 'K';
+            return components_1.FormatUtils.formatNumber((num / 1000), { decimalFigures: decimals || 3 }) + 'K';
         }
         if (absNum < 0.0000001) {
-            return (0, exports.formatNumberWithSeparators)(num, { precision: 0 });
+            return components_1.FormatUtils.formatNumber(num, { decimalFigures: 0 });
         }
         if (absNum < 0.00001) {
-            return (0, exports.formatNumberWithSeparators)(num, { precision: 6 });
+            return components_1.FormatUtils.formatNumber(num, { decimalFigures: 6 });
         }
         if (absNum < 0.001) {
-            return (0, exports.formatNumberWithSeparators)(num, { precision: 4 });
+            return components_1.FormatUtils.formatNumber(num, { decimalFigures: 4 });
         }
         if (absNum < 1) {
-            return (0, exports.formatNumberWithSeparators)(num, { precision: 4 });
+            return components_1.FormatUtils.formatNumber(num, { decimalFigures: 4 });
         }
-        return (0, exports.formatNumberWithSeparators)(num, { precision: 2 });
+        return components_1.FormatUtils.formatNumber(num, { decimalFigures: 2 });
     };
     exports.formatNumber = formatNumber;
     const formatNumberByFormat = (num, format, separators) => {
         if (!format)
-            return (0, exports.formatNumberWithSeparators)(num, { precision: 0 });
-        const decimalPlaces = format.split('.')[1] ? format.split('.')[1].length : 0;
+            return components_1.FormatUtils.formatNumber(num, { decimalFigures: 0 });
+        const decimalFigures = format.split('.')[1] ? format.split('.')[1].length : 0;
         if (format.includes('%')) {
-            return (0, exports.formatNumberWithSeparators)((num * 100), { precision: decimalPlaces }) + '%';
+            return components_1.FormatUtils.formatNumber((num * 100), { decimalFigures }) + '%';
         }
         const currencySymbol = format.indexOf('$') !== -1 ? '$' : '';
-        const roundedNum = (0, exports.formatNumberWithSeparators)(num, { precision: decimalPlaces });
+        const roundedNum = components_1.FormatUtils.formatNumber(num, { decimalFigures });
         if (separators || !(format.includes('m') || format.includes('a'))) {
             return format.indexOf('$') === 0 ? `${currencySymbol}${roundedNum}` : `${roundedNum}${currencySymbol}`;
         }
@@ -101,33 +101,32 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/
         return `${currencySymbol}${integerPart}`;
     };
     exports.formatNumberByFormat = formatNumberByFormat;
-    const formatNumberWithSeparators = (value, options) => {
-        let bigValue;
-        if (value instanceof eth_wallet_1.BigNumber) {
-            bigValue = value;
-        }
-        else {
-            bigValue = new eth_wallet_1.BigNumber(value);
-        }
-        if (bigValue.isNaN() || !bigValue.isFinite()) {
-            return '0';
-        }
-        if (options.precision || options.precision === 0) {
-            let outputStr = '';
-            if (bigValue.gte(1)) {
-                outputStr = bigValue.toFormat(options.precision, options.roundingMode || eth_wallet_1.BigNumber.ROUND_HALF_CEIL);
-            }
-            else {
-                outputStr = bigValue.toNumber().toLocaleString('en-US', { maximumSignificantDigits: options.precision || 2 });
-            }
-            if (outputStr.length > 18) {
-                outputStr = outputStr.substring(0, 18) + '...';
-            }
-            return outputStr;
-        }
-        return bigValue.toFormat();
-    };
-    exports.formatNumberWithSeparators = formatNumberWithSeparators;
+    // export const FormatUtils.formatNumber = (value: number | string | BigNumber, options: IFormatNumberOptions): string => {
+    //   let bigValue: BigNumber;
+    //   if (value instanceof BigNumber) {
+    //     bigValue = value;
+    //   }
+    //   else {
+    //     bigValue = new BigNumber(value);
+    //   }
+    //   if (bigValue.isNaN() || !bigValue.isFinite()) {
+    //     return '0';
+    //   }
+    //   if (options.decimalFigures || options.decimalFigures === 0) {
+    //     let outputStr = '';
+    //     if (bigValue.gte(1)) {
+    //       outputStr = bigValue.toFormat(options.decimalFigures, options.roundingMode || BigNumber.ROUND_HALF_CEIL);
+    //     }
+    //     else {
+    //       outputStr = bigValue.toNumber().toLocaleString('en-US', { maximumSignificantDigits: options.decimalFigures || 2 });
+    //     }
+    //     if (outputStr.length > 18) {
+    //       outputStr = outputStr.substring(0, 18) + '...';
+    //     }
+    //     return outputStr;
+    //   }
+    //   return bigValue.toFormat();
+    // }
     const groupArrayByKey = (arr) => {
         const groups = new Map();
         for (const [key, value] of arr) {
@@ -189,26 +188,26 @@ define("@scom/scom-bar-chart/global/index.ts", ["require", "exports", "@scom/sco
     __exportStar(interfaces_1, exports);
     __exportStar(utils_1, exports);
 });
-define("@scom/scom-bar-chart/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
+define("@scom/scom-bar-chart/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.chartStyle = exports.containerStyle = void 0;
-    const Theme = components_1.Styles.Theme.ThemeVars;
-    exports.containerStyle = components_1.Styles.style({
+    const Theme = components_2.Styles.Theme.ThemeVars;
+    exports.containerStyle = components_2.Styles.style({
         width: 'var(--layout-container-width)',
         maxWidth: 'var(--layout-container-max_width)',
         textAlign: 'var(--layout-container-text_align)',
         margin: '0 auto',
         padding: 10
     });
-    exports.chartStyle = components_1.Styles.style({
+    exports.chartStyle = components_2.Styles.style({
         display: 'block',
     });
 });
-define("@scom/scom-bar-chart/assets.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
+define("@scom/scom-bar-chart/assets.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    let moduleDir = components_2.application.currentModuleDir;
+    let moduleDir = components_3.application.currentModuleDir;
     function fullPath(path) {
         if (path.indexOf('://') > 0)
             return path;
@@ -549,10 +548,10 @@ define("@scom/scom-bar-chart/formSchema.ts", ["require", "exports"], function (r
     }
     exports.getEmbedderSchema = getEmbedderSchema;
 });
-define("@scom/scom-bar-chart/dataOptionsForm.tsx", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
+define("@scom/scom-bar-chart/dataOptionsForm.tsx", ["require", "exports", "@ijstech/components"], function (require, exports, components_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    let ScomBarChartDataOptionsForm = class ScomBarChartDataOptionsForm extends components_3.Module {
+    let ScomBarChartDataOptionsForm = class ScomBarChartDataOptionsForm extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
         }
@@ -613,16 +612,16 @@ define("@scom/scom-bar-chart/dataOptionsForm.tsx", ["require", "exports", "@ijst
         }
     };
     ScomBarChartDataOptionsForm = __decorate([
-        components_3.customModule,
-        (0, components_3.customElements)('i-scom-bar-chart-data-options-form')
+        components_4.customModule,
+        (0, components_4.customElements)('i-scom-bar-chart-data-options-form')
     ], ScomBarChartDataOptionsForm);
     exports.default = ScomBarChartDataOptionsForm;
 });
-define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@scom/scom-bar-chart/global/index.ts", "@scom/scom-bar-chart/index.css.ts", "@scom/scom-bar-chart/assets.ts", "@scom/scom-bar-chart/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-bar-chart/formSchema.ts", "@scom/scom-bar-chart/dataOptionsForm.tsx"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_1, formSchema_1, dataOptionsForm_1) {
+define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@scom/scom-bar-chart/global/index.ts", "@scom/scom-bar-chart/index.css.ts", "@scom/scom-bar-chart/assets.ts", "@scom/scom-bar-chart/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-bar-chart/formSchema.ts", "@scom/scom-bar-chart/dataOptionsForm.tsx"], function (require, exports, components_5, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_1, formSchema_1, dataOptionsForm_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_4.Styles.Theme.ThemeVars;
-    const currentTheme = components_4.Styles.Theme.currentTheme;
+    const Theme = components_5.Styles.Theme.ThemeVars;
+    const currentTheme = components_5.Styles.Theme.currentTheme;
     const DefaultData = {
         dataSource: scom_chart_data_source_setup_1.DataSource.Dune,
         queryId: '',
@@ -631,7 +630,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         options: undefined,
         mode: scom_chart_data_source_setup_1.ModeType.LIVE
     };
-    let ScomBarChart = class ScomBarChart extends components_4.Module {
+    let ScomBarChart = class ScomBarChart extends components_5.Module {
         static async create(options, parent) {
             let self = new this(parent, options);
             await self.ready();
@@ -752,17 +751,17 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     },
                     customUI: {
                         render: (data, onConfirm, onChange) => {
-                            const vstack = new components_4.VStack(null, { gap: '1rem' });
+                            const vstack = new components_5.VStack(null, { gap: '1rem' });
                             const dataSourceSetup = new scom_chart_data_source_setup_1.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.chartData), onCustomDataChanged: async (dataSourceSetupData) => {
                                     if (onChange) {
                                         onChange(true, Object.assign(Object.assign({}, this._data), dataSourceSetupData));
                                     }
                                 } }));
-                            const hstackBtnConfirm = new components_4.HStack(null, {
+                            const hstackBtnConfirm = new components_5.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
                             });
-                            const button = new components_4.Button(null, {
+                            const button = new components_5.Button(null, {
                                 caption: 'Confirm',
                                 width: 'auto',
                                 height: 40,
@@ -1094,7 +1093,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         return [x, y];
                     },
                     formatter: (params) => {
-                        let res = `<b>${xColumn.type === 'time' ? (0, components_4.moment)(params[0].axisValue).format('YYYY-MM-DD HH:mm') : params[0].axisValue}</b>`;
+                        let res = `<b>${xColumn.type === 'time' ? (0, components_5.moment)(params[0].axisValue).format('YYYY-MM-DD HH:mm') : params[0].axisValue}</b>`;
                         if (_series.length === 1) {
                             res += `<div style="display: flex; justify-content: space-between; gap: 10px"><span>${params[0].marker} ${params[0].seriesName}</span> ${params[0].value[1] === null ? '-' : percentage ? (0, index_1.formatNumber)(params[0].value[1], { percentValues: true }) : (0, index_1.formatNumberByFormat)(params[0].value[1], (yAxis === null || yAxis === void 0 ? void 0 : yAxis.labelFormat) ? yAxis.labelFormat : undefined)}</div>`;
                         }
@@ -1130,7 +1129,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         hideOverlap: true,
                         formatter: (xAxis === null || xAxis === void 0 ? void 0 : xAxis.tickFormat) ? (value, index) => {
                             if (type === 'time') {
-                                return (0, components_4.moment)(value).format(xAxis.tickFormat);
+                                return (0, components_5.moment)(value).format(xAxis.tickFormat);
                             }
                             else {
                                 if (isNaN(value))
@@ -1166,7 +1165,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                 series: _series
             };
             this.pnlChart.clearInnerHTML();
-            const chart = new components_4.BarChart(this.pnlChart, {
+            const chart = new components_5.BarChart(this.pnlChart, {
                 data: _chartData,
                 width: '100%',
                 height: '100%'
@@ -1223,8 +1222,8 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
         }
     };
     ScomBarChart = __decorate([
-        components_4.customModule,
-        (0, components_4.customElements)('i-scom-bar-chart')
+        components_5.customModule,
+        (0, components_5.customElements)('i-scom-bar-chart')
     ], ScomBarChart);
     exports.default = ScomBarChart;
 });
