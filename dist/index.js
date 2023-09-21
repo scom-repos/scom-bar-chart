@@ -287,6 +287,9 @@ define("@scom/scom-bar-chart/formSchema.ts", ["require", "exports"], function (r
                             type: 'string',
                             enum: ['time', 'category'],
                             required: true
+                        },
+                        timeFormat: {
+                            type: 'string'
                         }
                     }
                 },
@@ -313,6 +316,10 @@ define("@scom/scom-bar-chart/formSchema.ts", ["require", "exports"], function (r
                         show: {
                             type: 'boolean'
                         },
+                        fontColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
                         scroll: {
                             type: 'boolean'
                         },
@@ -334,6 +341,10 @@ define("@scom/scom-bar-chart/formSchema.ts", ["require", "exports"], function (r
                         title: {
                             type: 'string'
                         },
+                        fontColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
                         tickFormat: {
                             type: 'string'
                         },
@@ -347,6 +358,10 @@ define("@scom/scom-bar-chart/formSchema.ts", ["require", "exports"], function (r
                     properties: {
                         title: {
                             type: 'string'
+                        },
+                        fontColor: {
+                            type: 'string',
+                            format: 'color'
                         },
                         tickFormat: {
                             type: 'string'
@@ -952,18 +967,23 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.lbDescription.visible = !!description;
             this.pnlChart.height = `calc(100% - ${this.vStackInfo.offsetHeight + 10}px)`;
             const { xColumn, yColumns, groupBy, seriesOptions, stacking, legend, showDataLabels, percentage, xAxis, yAxis } = options;
-            const { key, type } = xColumn;
+            const { key, type, timeFormat } = xColumn;
             let _legend = {
                 show: legend === null || legend === void 0 ? void 0 : legend.show,
             };
-            if (legend === null || legend === void 0 ? void 0 : legend.position) {
-                _legend[legend.position] = 'auto';
-                if (['left', 'right'].includes(legend.position)) {
-                    _legend['orient'] = 'vertical';
+            if (legend && legend.show) {
+                if (legend.position) {
+                    _legend[legend.position] = 'auto';
+                    if (['left', 'right'].includes(legend.position)) {
+                        _legend['orient'] = 'vertical';
+                    }
                 }
-            }
-            if (legend === null || legend === void 0 ? void 0 : legend.scroll) {
-                _legend['type'] = 'scroll';
+                if (legend.scroll) {
+                    _legend['type'] = 'scroll';
+                }
+                if (legend.fontColor) {
+                    _legend['textStyle'] = { color: legend.fontColor };
+                }
             }
             let _series = [];
             let arr = this.chartData;
@@ -975,7 +995,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                 const keys = Object.keys(group);
                 keys.map(v => {
                     const _data = (0, index_1.concatUnique)(times, group[v]);
-                    groupData[v] = (0, index_1.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? new Date(m) : m, _data[m]]));
+                    groupData[v] = (0, index_1.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? (0, components_5.moment)(m, timeFormat).toDate() : m, _data[m]]));
                 });
                 const isPercentage = percentage && groupData[keys[0]] && (0, index_1.isNumeric)(groupData[keys[0]][0][1]);
                 _series = keys.map(v => {
@@ -1019,7 +1039,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     if (isPercentage && !(0, index_1.isNumeric)(arr[0][col])) {
                         isPercentage = false;
                     }
-                    groupData[col] = (0, index_1.groupArrayByKey)(arr.map(v => [type === 'time' ? new Date(v[key]) : col, v[col]]));
+                    groupData[col] = (0, index_1.groupArrayByKey)(arr.map(v => [type === 'time' ? (0, components_5.moment)(v[key], timeFormat).toDate() : col, v[col]]));
                 });
                 _series = yColumns.map((col) => {
                     let _data = [];
@@ -1122,10 +1142,12 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     nameLocation: 'center',
                     nameGap: (xAxis === null || xAxis === void 0 ? void 0 : xAxis.title) ? 25 : 15,
                     nameTextStyle: {
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        color: xAxis === null || xAxis === void 0 ? void 0 : xAxis.fontColor
                     },
                     axisLabel: {
                         fontSize: 10,
+                        color: xAxis === null || xAxis === void 0 ? void 0 : xAxis.fontColor,
                         hideOverlap: true,
                         formatter: (xAxis === null || xAxis === void 0 ? void 0 : xAxis.tickFormat) ? (value, index) => {
                             if (type === 'time') {
@@ -1145,7 +1167,8 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     nameLocation: 'center',
                     nameGap: (yAxis === null || yAxis === void 0 ? void 0 : yAxis.title) ? 40 : 15,
                     nameTextStyle: {
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        color: yAxis === null || yAxis === void 0 ? void 0 : yAxis.fontColor
                     },
                     position: (yAxis === null || yAxis === void 0 ? void 0 : yAxis.position) || 'left',
                     min: isSingle ? min : undefined,
@@ -1155,6 +1178,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         showMinLabel: false,
                         showMaxLabel: false,
                         fontSize: 10,
+                        color: yAxis === null || yAxis === void 0 ? void 0 : yAxis.fontColor,
                         position: 'end',
                         formatter: (value, index) => {
                             return (0, index_1.formatNumber)(value, { format: yAxis === null || yAxis === void 0 ? void 0 : yAxis.tickFormat, decimals: 2, percentValues: percentage });

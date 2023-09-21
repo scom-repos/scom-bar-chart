@@ -6,6 +6,7 @@ declare module "@scom/scom-bar-chart/global/interfaces.ts" {
         xColumn?: {
             key: string;
             type: 'time' | 'category';
+            timeFormat?: string;
         };
         yColumns?: string[];
         groupBy?: string;
@@ -17,17 +18,20 @@ declare module "@scom/scom-bar-chart/global/interfaces.ts" {
         stacking?: boolean;
         xAxis?: {
             title?: string;
+            fontColor?: string;
             tickFormat?: string;
             reverseValues?: boolean;
         };
         yAxis?: {
             title?: string;
+            fontColor?: string;
             tickFormat?: string;
             labelFormat?: string;
             position?: 'left' | 'right';
         };
         legend?: {
             show?: boolean;
+            fontColor?: string;
             scroll?: boolean;
             position?: 'top' | 'bottom' | 'left' | 'right';
         };
@@ -199,6 +203,9 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                         enum: string[];
                                         required: boolean;
                                     };
+                                    timeFormat: {
+                                        type: string;
+                                    };
                                 };
                             };
                             yColumns: {
@@ -224,6 +231,10 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                     show: {
                                         type: string;
                                     };
+                                    fontColor: {
+                                        type: string;
+                                        format: string;
+                                    };
                                     scroll: {
                                         type: string;
                                     };
@@ -245,6 +256,10 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                     title: {
                                         type: string;
                                     };
+                                    fontColor: {
+                                        type: string;
+                                        format: string;
+                                    };
                                     tickFormat: {
                                         type: string;
                                     };
@@ -258,6 +273,10 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                 properties: {
                                     title: {
                                         type: string;
+                                    };
+                                    fontColor: {
+                                        type: string;
+                                        format: string;
                                     };
                                     tickFormat: {
                                         type: string;
@@ -355,6 +374,9 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                     enum: string[];
                                     required: boolean;
                                 };
+                                timeFormat: {
+                                    type: string;
+                                };
                             };
                         };
                         yColumns: {
@@ -380,6 +402,10 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                 show: {
                                     type: string;
                                 };
+                                fontColor: {
+                                    type: string;
+                                    format: string;
+                                };
                                 scroll: {
                                     type: string;
                                 };
@@ -401,6 +427,10 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                 title: {
                                     type: string;
                                 };
+                                fontColor: {
+                                    type: string;
+                                    format: string;
+                                };
                                 tickFormat: {
                                     type: string;
                                 };
@@ -414,6 +444,10 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                             properties: {
                                 title: {
                                     type: string;
+                                };
+                                fontColor: {
+                                    type: string;
+                                    format: string;
                                 };
                                 tickFormat: {
                                     type: string;

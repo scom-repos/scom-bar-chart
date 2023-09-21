@@ -17,6 +17,9 @@ function visualizationOptions(columns: string[]) {
                         type: 'string',
                         enum: ['time', 'category'],
                         required: true
+                    },
+                    timeFormat: {
+                        type: 'string'
                     }
                 }
             },
@@ -43,6 +46,10 @@ function visualizationOptions(columns: string[]) {
                     show: {
                         type: 'boolean'
                     },
+                    fontColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
                     scroll: {
                         type: 'boolean'
                     },
@@ -64,6 +71,10 @@ function visualizationOptions(columns: string[]) {
                     title: {
                         type: 'string'
                     },
+                    fontColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
                     tickFormat: {
                         type: 'string'
                     },
@@ -77,6 +88,10 @@ function visualizationOptions(columns: string[]) {
                 properties: {
                     title: {
                         type: 'string'
+                    },
+                    fontColor: {
+                        type: 'string',
+                        format: 'color'
                     },
                     tickFormat: {
                         type: 'string'

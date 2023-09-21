@@ -4,7 +4,8 @@ import { ModeType } from "@scom/scom-chart-data-source-setup"
 export interface IBarChartOptions {
   xColumn?: {
     key: string,
-    type: 'time' | 'category'
+    type: 'time' | 'category',
+    timeFormat?: string
   },
   yColumns?: string[],
   groupBy?: string,
@@ -16,17 +17,20 @@ export interface IBarChartOptions {
   stacking?: boolean,
   xAxis?: {
     title?: string,
-    tickFormat?: string
+    fontColor?: string,
+    tickFormat?: string,
     reverseValues?: boolean
   },
   yAxis?: {
     title?: string,
+    fontColor?: string,
     tickFormat?: string,
     labelFormat?: string,
     position?: 'left' | 'right'
   },
   legend?: {
     show?: boolean,
+    fontColor?: string,
     scroll?: boolean,
     position?: 'top' | 'bottom' | 'left' | 'right'
   },
