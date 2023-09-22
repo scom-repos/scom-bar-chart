@@ -16,14 +16,13 @@ import {
   IUISchema
 } from '@ijstech/components';
 import { IBarChartConfig, formatNumber, groupByCategory, extractUniqueTimes, concatUnique, groupArrayByKey, formatNumberByFormat, IBarChartOptions, isNumeric } from './global/index';
-import { chartStyle, containerStyle } from './index.css';
+import { chartStyle, containerStyle, textStyle } from './index.css';
 import assets from './assets';
 import configData from './data.json';
 import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, callAPI, DataSource } from '@scom/scom-chart-data-source-setup';
 import { getBuilderSchema, getEmbedderSchema } from './formSchema';
 import ScomBarChartDataOptionsForm from './dataOptionsForm';
 const Theme = Styles.Theme.ThemeVars;
-const currentTheme = Styles.Theme.currentTheme;
 
 interface ScomBarChartElement extends ControlElement {
   lazyLoad?: boolean;
@@ -87,7 +86,15 @@ export default class ScomBarChart extends Module {
     return this.tag;
   }
 
-  private async setTag(value: any) {
+  private async setTag(value: any, fromParent?: boolean) {
+    if (fromParent) {
+      this.tag.parentFontColor = value.fontColor;
+      this.tag.parentCustomFontColor = value.customFontColor;
+      this.tag.parentBackgroundColor = value.backgroundColor;
+      this.tag.parentCustomBackgroundColor = value.customBackgoundColor;
+      this.onUpdateBlock();
+      return;
+    }
     const newValue = value || {};
     for (let prop in newValue) {
       if (newValue.hasOwnProperty(prop)) {
@@ -328,8 +335,9 @@ export default class ScomBarChart extends Module {
     if (this.chartContainer) {
       this.chartContainer.style.boxShadow = this.tag?.darkShadow ? '0 -2px 10px rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
     }
-    this.updateStyle('--text-primary', this.tag?.fontColor);
-    this.updateStyle('--background-main', this.tag?.backgroundColor);
+    const tags = this.tag || {};
+    this.updateStyle('--custom-text-color', tags.customFontColor ? tags.fontColor : tags.parentCustomFontColor ? tags.parentFontColor : '');
+    this.updateStyle('--custom-background-color', tags.customBackgroundColor ? tags.backgroundColor : tags.parentCustomBackgroundColor ? tags.parentBackgroundColor : '');
   }
 
   private onUpdateBlock() {
@@ -629,15 +637,10 @@ export default class ScomBarChart extends Module {
     super.init();
     this.updateTheme();
     this.setTag({
-      fontColor: currentTheme.text.primary,
-      backgroundColor: currentTheme.background.main,
       darkShadow: false,
       height: 500
     })
     this.classList.add(chartStyle);
-    // const { width, height, darkShadow } = this.tag || {};
-    // this.width = width || 700;
-    // this.height = height || 500;
     this.maxWidth = '100%';
     this.chartContainer.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
     const lazyLoad = this.getAttribute('lazyLoad', true, false);
@@ -661,7 +664,6 @@ export default class ScomBarChart extends Module {
       <i-vstack
         id="chartContainer"
         position="relative"
-        background={{ color: Theme.background.main }}
         height="100%"
         padding={{ top: 10, bottom: 10, left: 10, right: 10 }}
         class={containerStyle}
@@ -681,8 +683,8 @@ export default class ScomBarChart extends Module {
           margin={{ left: 'auto', right: 'auto', bottom: 10 }}
           verticalAlignment="center"
         >
-          <i-label id="lbTitle" font={{ bold: true, color: Theme.text.primary }} />
-          <i-label id="lbDescription" margin={{ top: 5 }} font={{ color: Theme.text.primary }} />
+          <i-label id="lbTitle" font={{ bold: true }} class={textStyle} />
+          <i-label id="lbDescription" margin={{ top: 5 }} class={textStyle} />
         </i-vstack>
         <i-panel id="pnlChart" width="100%" height="inherit" />
       </i-vstack>

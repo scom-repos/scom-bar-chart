@@ -132,17 +132,20 @@ const theme = {
     darkShadow: {
         type: 'boolean'
     },
+    customFontColor: {
+        type: 'boolean'
+    },
     fontColor: {
         type: 'string',
         format: 'color'
+    },
+    customBackgroundColor: {
+        type: 'boolean'
     },
     backgroundColor: {
         type: 'string',
         format: 'color'
     },
-    // width: {
-    //     type: 'string'
-    // },
     height: {
         type: 'string'
     }
@@ -157,20 +160,61 @@ const themeUISchema = {
             type: 'VerticalLayout',
             elements: [
                 {
-                    type: 'Control',
-                    scope: '#/properties/darkShadow'
+                    type: 'HorizontalLayout',
+                    elements: [
+                        {
+                            type: 'Control',
+                            scope: '#/properties/customFontColor'
+                        },
+                        {
+                            type: 'Control',
+                            scope: '#/properties/fontColor',
+                            rule: {
+                                effect: 'ENABLE',
+                                condition: {
+                                    scope: '#/properties/customFontColor',
+                                    schema: {
+                                        const: true
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 },
                 {
-                    type: 'Control',
-                    scope: '#/properties/fontColor'
+                    type: 'HorizontalLayout',
+                    elements: [
+                        {
+                            type: 'Control',
+                            scope: '#/properties/customBackgroundColor'
+                        },
+                        {
+                            type: 'Control',
+                            scope: '#/properties/backgroundColor',
+                            rule: {
+                                effect: 'ENABLE',
+                                condition: {
+                                    scope: '#/properties/customBackgroundColor',
+                                    schema: {
+                                        const: true
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 },
                 {
-                    type: 'Control',
-                    scope: '#/properties/backgroundColor'
-                },
-                {
-                    type: 'Control',
-                    scope: '#/properties/height'
+                    type: 'HorizontalLayout',
+                    elements: [
+                        {
+                            type: 'Control',
+                            scope: '#/properties/darkShadow'
+                        },
+                        {
+                            type: 'Control',
+                            scope: '#/properties/height'
+                        }
+                    ]
                 }
             ]
         }

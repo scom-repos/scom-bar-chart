@@ -91,6 +91,7 @@ declare module "@scom/scom-bar-chart/global/index.ts" {
 /// <amd-module name="@scom/scom-bar-chart/index.css.ts" />
 declare module "@scom/scom-bar-chart/index.css.ts" {
     export const containerStyle: string;
+    export const textStyle: string;
     export const chartStyle: string;
 }
 /// <amd-module name="@scom/scom-bar-chart/assets.ts" />
@@ -147,9 +148,15 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                 darkShadow: {
                     type: string;
                 };
+                customFontColor: {
+                    type: string;
+                };
                 fontColor: {
                     type: string;
                     format: string;
+                };
+                customBackgroundColor: {
+                    type: string;
                 };
                 backgroundColor: {
                     type: string;
@@ -168,7 +175,33 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
         };
         uiSchema: {
             type: string;
-            elements: {
+            elements: ({
+                type: string;
+                label: string;
+                elements: {
+                    type: string;
+                    elements: {
+                        type: string;
+                        elements: ({
+                            type: string;
+                            scope: string;
+                            rule?: undefined;
+                        } | {
+                            type: string;
+                            scope: string;
+                            rule: {
+                                effect: string;
+                                condition: {
+                                    scope: string;
+                                    schema: {
+                                        const: boolean;
+                                    };
+                                };
+                            };
+                        })[];
+                    }[];
+                }[];
+            } | {
                 type: string;
                 label: string;
                 elements: {
@@ -178,7 +211,7 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                         scope: string;
                     }[];
                 }[];
-            }[];
+            })[];
         };
         advanced: {
             dataSchema: {
@@ -337,9 +370,15 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                 darkShadow: {
                     type: string;
                 };
+                customFontColor: {
+                    type: string;
+                };
                 fontColor: {
                     type: string;
                     format: string;
+                };
+                customBackgroundColor: {
+                    type: string;
                 };
                 backgroundColor: {
                     type: string;
@@ -486,7 +525,33 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
         };
         uiSchema: {
             type: string;
-            elements: {
+            elements: ({
+                type: string;
+                label: string;
+                elements: {
+                    type: string;
+                    elements: {
+                        type: string;
+                        elements: ({
+                            type: string;
+                            scope: string;
+                            rule?: undefined;
+                        } | {
+                            type: string;
+                            scope: string;
+                            rule: {
+                                effect: string;
+                                condition: {
+                                    scope: string;
+                                    schema: {
+                                        const: boolean;
+                                    };
+                                };
+                            };
+                        })[];
+                    }[];
+                }[];
+            } | {
                 type: string;
                 label: string;
                 elements: {
@@ -509,7 +574,7 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                         scope?: undefined;
                     })[];
                 }[];
-            }[];
+            })[];
         };
     };
 }
