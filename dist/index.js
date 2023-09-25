@@ -60,13 +60,13 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/
         }
         const absNum = Math.abs(num);
         if (absNum >= 1000000000) {
-            return components_1.FormatUtils.formatNumber((num / 1000000000), { decimalFigures: decimals || 3 }) + 'B';
+            return components_1.FormatUtils.formatNumber((num / 1000000000), { decimalFigures: decimals }) + 'B';
         }
         if (absNum >= 1000000) {
-            return components_1.FormatUtils.formatNumber((num / 1000000), { decimalFigures: decimals || 3 }) + 'M';
+            return components_1.FormatUtils.formatNumber((num / 1000000), { decimalFigures: decimals }) + 'M';
         }
         if (absNum >= 1000) {
-            return components_1.FormatUtils.formatNumber((num / 1000), { decimalFigures: decimals || 3 }) + 'K';
+            return components_1.FormatUtils.formatNumber((num / 1000), { decimalFigures: decimals }) + 'K';
         }
         if (absNum < 0.0000001) {
             return components_1.FormatUtils.formatNumber(num, { decimalFigures: 0 });
@@ -127,7 +127,9 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/
     //   }
     //   return bigValue.toFormat();
     // }
-    const groupArrayByKey = (arr) => {
+    const groupArrayByKey = (arr, isMerged) => {
+        if (!isMerged)
+            return arr;
         const groups = new Map();
         for (const [key, value] of arr) {
             const strKey = key instanceof Date ? key.getTime().toString() : key.toString();
@@ -308,6 +310,9 @@ define("@scom/scom-bar-chart/formSchema.ts", ["require", "exports"], function (r
                 groupBy: {
                     type: 'string',
                     enum: ['', ...columns]
+                },
+                mergeDuplicateData: {
+                    type: 'boolean'
                 },
                 stacking: {
                     type: 'boolean'
@@ -1021,7 +1026,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.lbDescription.caption = description;
             this.lbDescription.visible = !!description;
             this.pnlChart.height = `calc(100% - ${this.vStackInfo.offsetHeight + 10}px)`;
-            const { xColumn, yColumns, groupBy, seriesOptions, stacking, legend, showDataLabels, percentage, xAxis, yAxis } = options;
+            const { xColumn, yColumns, groupBy, seriesOptions, mergeDuplicateData, stacking, legend, showDataLabels, percentage, xAxis, yAxis } = options;
             const { key, type, timeFormat } = xColumn;
             let _legend = {
                 show: legend === null || legend === void 0 ? void 0 : legend.show,
@@ -1050,7 +1055,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                 const keys = Object.keys(group);
                 keys.map(v => {
                     const _data = (0, index_1.concatUnique)(times, group[v]);
-                    groupData[v] = (0, index_1.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? (0, components_5.moment)(m, timeFormat).toDate() : m, _data[m]]));
+                    groupData[v] = (0, index_1.groupArrayByKey)(Object.keys(_data).map(m => [type === 'time' ? (0, components_5.moment)(m, timeFormat).toDate() : m, _data[m]]), mergeDuplicateData);
                 });
                 const isPercentage = percentage && groupData[keys[0]] && (0, index_1.isNumeric)(groupData[keys[0]][0][1]);
                 _series = keys.map(v => {
@@ -1094,7 +1099,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     if (isPercentage && !(0, index_1.isNumeric)(arr[0][col])) {
                         isPercentage = false;
                     }
-                    groupData[col] = (0, index_1.groupArrayByKey)(arr.map(v => [type === 'time' ? (0, components_5.moment)(v[key], timeFormat).toDate() : col, v[col]]));
+                    groupData[col] = (0, index_1.groupArrayByKey)(arr.map(v => [type === 'time' ? (0, components_5.moment)(v[key], timeFormat).toDate() : col, v[col]]), mergeDuplicateData);
                 });
                 _series = yColumns.map((col) => {
                     let _data = [];
@@ -1130,19 +1135,19 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     };
                 });
             }
-            let min = 0, max = 0;
-            const isSingle = _series.length === 1;
-            if (isSingle) {
-                const arr = _series[0].data.filter(v => v[1] !== null).map(v => v[1]);
-                min = Math.min(...arr);
-                max = Math.max(...arr);
-                const step = (max - min) / 5;
-                min = min > step ? min - step : min;
-                max += step;
-            }
-            const minInterval = (max - min) / 4;
-            const power = Math.pow(10, Math.floor(Math.log10(minInterval)));
-            const roundedInterval = Math.ceil(minInterval / power) * power;
+            // let min = 0, max = 0;
+            // const isSingle = _series.length === 1;
+            // if (isSingle) {
+            //   const arr = _series[0].data.filter(v => v[1] !== null).map(v => v[1]);
+            //   min = Math.min(...arr);
+            //   max = Math.max(...arr);
+            //   const step = (max - min) / 5;
+            //   min = min > step ? min - step : min;
+            //   max += step;
+            // }
+            // const minInterval = (max - min) / 4;
+            // const power = Math.pow(10, Math.floor(Math.log10(minInterval)));
+            // const roundedInterval = Math.ceil(minInterval / power) * power;
             const _chartData = {
                 tooltip: {
                     trigger: 'axis',
@@ -1226,12 +1231,12 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                         color: yAxis === null || yAxis === void 0 ? void 0 : yAxis.fontColor
                     },
                     position: (yAxis === null || yAxis === void 0 ? void 0 : yAxis.position) || 'left',
-                    min: isSingle ? min : undefined,
-                    max: isSingle ? max : undefined,
-                    interval: isSingle ? roundedInterval : undefined,
+                    // min: isSingle ? min : undefined,
+                    // max: isSingle ? max : undefined,
+                    // interval: isSingle ? roundedInterval : undefined,
                     axisLabel: {
-                        showMinLabel: false,
-                        showMaxLabel: false,
+                        // showMinLabel: false,
+                        // showMaxLabel: false,
                         fontSize: 10,
                         color: yAxis === null || yAxis === void 0 ? void 0 : yAxis.fontColor,
                         position: 'end',

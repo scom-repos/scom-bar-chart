@@ -34,6 +34,7 @@ export interface IBarChartOptions {
     scroll?: boolean,
     position?: 'top' | 'bottom' | 'left' | 'right'
   },
+  mergeDuplicateData?: boolean,
   showDataLabels?: boolean,
   percentage?: boolean
 }

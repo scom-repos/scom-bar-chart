@@ -36,6 +36,9 @@ function visualizationOptions(columns: string[]) {
                 type: 'string',
                 enum: ['', ...columns]
             },
+            mergeDuplicateData: {
+                type: 'boolean'
+            },
             stacking: {
                 type: 'boolean'
             },
