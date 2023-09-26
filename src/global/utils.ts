@@ -23,13 +23,13 @@ export const formatNumber = (num: number, options?: { format?: string, decimals?
   }
   const absNum = Math.abs(num);
   if (absNum >= 1000000000) {
-    return FormatUtils.formatNumber((num / 1000000000), { decimalFigures: decimals || 3 }) + 'B';
+    return FormatUtils.formatNumber((num / 1000000000), { decimalFigures: decimals }) + 'B';
   }
   if (absNum >= 1000000) {
-    return FormatUtils.formatNumber((num / 1000000), { decimalFigures: decimals || 3 }) + 'M';
+    return FormatUtils.formatNumber((num / 1000000), { decimalFigures: decimals }) + 'M';
   }
   if (absNum >= 1000) {
-    return FormatUtils.formatNumber((num / 1000), { decimalFigures: decimals || 3 }) + 'K';
+    return FormatUtils.formatNumber((num / 1000), { decimalFigures: decimals }) + 'K';
   }
   if (absNum < 0.0000001) {
     return FormatUtils.formatNumber(num, { decimalFigures: 0 });
@@ -93,7 +93,8 @@ export const formatNumberByFormat = (num: number, format: string, separators?: b
 //   return bigValue.toFormat();
 // }
 
-export const groupArrayByKey = (arr: [Date | string, string | number][]) => {
+export const groupArrayByKey = (arr: [Date | string, string | number][], isMerged?: boolean) => {
+  if (!isMerged) return arr;
   const groups = new Map<string, number | string>();
   for (const [key, value] of arr) {
     const strKey = key instanceof Date ? key.getTime().toString() : key.toString();

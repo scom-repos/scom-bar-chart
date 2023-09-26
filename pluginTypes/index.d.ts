@@ -35,6 +35,7 @@ declare module "@scom/scom-bar-chart/global/interfaces.ts" {
             scroll?: boolean;
             position?: 'top' | 'bottom' | 'left' | 'right';
         };
+        mergeDuplicateData?: boolean;
         showDataLabels?: boolean;
         percentage?: boolean;
     }
@@ -66,7 +67,7 @@ declare module "@scom/scom-bar-chart/global/utils.ts" {
         percentValues?: boolean;
     }) => any;
     export const formatNumberByFormat: (num: number, format: string, separators?: boolean) => any;
-    export const groupArrayByKey: (arr: [Date | string, string | number][]) => (string | number | Date)[][];
+    export const groupArrayByKey: (arr: [Date | string, string | number][], isMerged?: boolean) => (string | number | Date)[][];
     export const groupByCategory: (data: {
         [key: string]: any;
     }[], category: string, xAxis: string, yAxis: string) => {
@@ -254,6 +255,9 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                                 type: string;
                                 enum: string[];
                             };
+                            mergeDuplicateData: {
+                                type: string;
+                            };
                             stacking: {
                                 type: string;
                             };
@@ -430,6 +434,9 @@ declare module "@scom/scom-bar-chart/formSchema.ts" {
                         groupBy: {
                             type: string;
                             enum: string[];
+                        };
+                        mergeDuplicateData: {
+                            type: string;
                         };
                         stacking: {
                             type: string;
