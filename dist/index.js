@@ -1194,6 +1194,9 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     }
                 },
                 legend: _legend,
+                grid: {
+                    containLabel: true
+                },
                 xAxis: {
                     type: type,
                     boundaryGap: false,
