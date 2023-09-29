@@ -564,6 +564,9 @@ export default class ScomBarChart extends Module {
         }
       },
       legend: _legend,
+      grid: {
+        containLabel: true
+      },
       xAxis: {
         type: type,
         boundaryGap: false,
