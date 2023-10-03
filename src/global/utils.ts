@@ -22,23 +22,14 @@ export const formatNumber = (num: number, options?: { format?: string, decimals?
     return formatNumberByFormat(num, format);
   }
   const absNum = Math.abs(num);
-  if (absNum >= 1000000000) {
-    return FormatUtils.formatNumber((num / 1000000000), { decimalFigures: decimals }) + 'B';
-  }
-  if (absNum >= 1000000) {
-    return FormatUtils.formatNumber((num / 1000000), { decimalFigures: decimals }) + 'M';
-  }
   if (absNum >= 1000) {
-    return FormatUtils.formatNumber((num / 1000), { decimalFigures: decimals }) + 'K';
+    return FormatUtils.formatNumber(num, { decimalFigures: decimals, shortScale: true });
   }
   if (absNum < 0.0000001) {
     return FormatUtils.formatNumber(num, { decimalFigures: 0 });
   }
   if (absNum < 0.00001) {
     return FormatUtils.formatNumber(num, { decimalFigures: 6 });
-  }
-  if (absNum < 0.001) {
-    return FormatUtils.formatNumber(num, { decimalFigures: 4 });
   }
   if (absNum < 1) {
     return FormatUtils.formatNumber(num, { decimalFigures: 4 });
@@ -62,36 +53,6 @@ export const formatNumberByFormat = (num: number, format: string, separators?: b
   const integerPart = formatNumber(parseInt(parts[0].replace(/,/g, '')), { decimals: decimalPart.length });
   return `${currencySymbol}${integerPart}`;
 }
-
-// export const FormatUtils.formatNumber = (value: number | string | BigNumber, options: IFormatNumberOptions): string => {
-//   let bigValue: BigNumber;
-//   if (value instanceof BigNumber) {
-//     bigValue = value;
-//   }
-//   else {
-//     bigValue = new BigNumber(value);
-//   }
-
-//   if (bigValue.isNaN() || !bigValue.isFinite()) {
-//     return '0';
-//   }
-
-//   if (options.decimalFigures || options.decimalFigures === 0) {
-//     let outputStr = '';
-//     if (bigValue.gte(1)) {
-//       outputStr = bigValue.toFormat(options.decimalFigures, options.roundingMode || BigNumber.ROUND_HALF_CEIL);
-//     }
-//     else {
-//       outputStr = bigValue.toNumber().toLocaleString('en-US', { maximumSignificantDigits: options.decimalFigures || 2 });
-//     }
-//     if (outputStr.length > 18) {
-//       outputStr = outputStr.substring(0, 18) + '...';
-//     }
-//     return outputStr;
-//   }
-
-//   return bigValue.toFormat();
-// }
 
 export const groupArrayByKey = (arr: [Date | string, string | number][], isMerged?: boolean) => {
   if (!isMerged) return arr;

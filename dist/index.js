@@ -59,23 +59,14 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/
             return (0, exports.formatNumberByFormat)(num, format);
         }
         const absNum = Math.abs(num);
-        if (absNum >= 1000000000) {
-            return components_1.FormatUtils.formatNumber((num / 1000000000), { decimalFigures: decimals }) + 'B';
-        }
-        if (absNum >= 1000000) {
-            return components_1.FormatUtils.formatNumber((num / 1000000), { decimalFigures: decimals }) + 'M';
-        }
         if (absNum >= 1000) {
-            return components_1.FormatUtils.formatNumber((num / 1000), { decimalFigures: decimals }) + 'K';
+            return components_1.FormatUtils.formatNumber(num, { decimalFigures: decimals, shortScale: true });
         }
         if (absNum < 0.0000001) {
             return components_1.FormatUtils.formatNumber(num, { decimalFigures: 0 });
         }
         if (absNum < 0.00001) {
             return components_1.FormatUtils.formatNumber(num, { decimalFigures: 6 });
-        }
-        if (absNum < 0.001) {
-            return components_1.FormatUtils.formatNumber(num, { decimalFigures: 4 });
         }
         if (absNum < 1) {
             return components_1.FormatUtils.formatNumber(num, { decimalFigures: 4 });
@@ -101,32 +92,6 @@ define("@scom/scom-bar-chart/global/utils.ts", ["require", "exports", "@ijstech/
         return `${currencySymbol}${integerPart}`;
     };
     exports.formatNumberByFormat = formatNumberByFormat;
-    // export const FormatUtils.formatNumber = (value: number | string | BigNumber, options: IFormatNumberOptions): string => {
-    //   let bigValue: BigNumber;
-    //   if (value instanceof BigNumber) {
-    //     bigValue = value;
-    //   }
-    //   else {
-    //     bigValue = new BigNumber(value);
-    //   }
-    //   if (bigValue.isNaN() || !bigValue.isFinite()) {
-    //     return '0';
-    //   }
-    //   if (options.decimalFigures || options.decimalFigures === 0) {
-    //     let outputStr = '';
-    //     if (bigValue.gte(1)) {
-    //       outputStr = bigValue.toFormat(options.decimalFigures, options.roundingMode || BigNumber.ROUND_HALF_CEIL);
-    //     }
-    //     else {
-    //       outputStr = bigValue.toNumber().toLocaleString('en-US', { maximumSignificantDigits: options.decimalFigures || 2 });
-    //     }
-    //     if (outputStr.length > 18) {
-    //       outputStr = outputStr.substring(0, 18) + '...';
-    //     }
-    //     return outputStr;
-    //   }
-    //   return bigValue.toFormat();
-    // }
     const groupArrayByKey = (arr, isMerged) => {
         if (!isMerged)
             return arr;
