@@ -92,6 +92,10 @@ export default class ScomBarChart extends Module {
       this.tag.parentCustomFontColor = value.customFontColor;
       this.tag.parentBackgroundColor = value.backgroundColor;
       this.tag.parentCustomBackgroundColor = value.customBackgoundColor;
+      this.tag.customWidgetsBackground = value.customWidgetsBackground;
+      this.tag.widgetsBackground = value.widgetsBackground;
+      this.tag.customWidgetsColor = value.customWidgetsColor;
+      this.tag.widgetsColor = value.widgetsColor;
       this.onUpdateBlock();
       return;
     }
@@ -336,8 +340,8 @@ export default class ScomBarChart extends Module {
       this.chartContainer.style.boxShadow = this.tag?.darkShadow ? '0 -2px 10px rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
     }
     const tags = this.tag || {};
-    this.updateStyle('--custom-text-color', tags.customFontColor ? tags.fontColor : tags.parentCustomFontColor ? tags.parentFontColor : '');
-    this.updateStyle('--custom-background-color', tags.customBackgroundColor ? tags.backgroundColor : tags.parentCustomBackgroundColor ? tags.parentBackgroundColor : '');
+    this.updateStyle('--custom-text-color', tags.customFontColor ? tags.fontColor : tags.customWidgetsColor ? tags.widgetsColor : tags.parentCustomFontColor ? tags.parentFontColor : '');
+    this.updateStyle('--custom-background-color', tags.customBackgroundColor ? tags.backgroundColor : tags.customWidgetsBackground ? tags.widgetsBackground : tags.parentCustomBackgroundColor ? tags.parentBackgroundColor : '');
   }
 
   private onUpdateBlock() {
