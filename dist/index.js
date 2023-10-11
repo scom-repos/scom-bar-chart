@@ -308,6 +308,24 @@ define("@scom/scom-bar-chart/formSchema.ts", ["require", "exports"], function (r
                 percentage: {
                     type: 'boolean'
                 },
+                padding: {
+                    type: 'object',
+                    title: 'Padding (px)',
+                    properties: {
+                        top: {
+                            type: 'number'
+                        },
+                        bottom: {
+                            type: 'number'
+                        },
+                        left: {
+                            type: 'number'
+                        },
+                        right: {
+                            type: 'number'
+                        }
+                    }
+                },
                 xAxis: {
                     type: 'object',
                     properties: {
@@ -991,7 +1009,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             this.lbDescription.caption = description;
             this.lbDescription.visible = !!description;
             this.pnlChart.height = `calc(100% - ${this.vStackInfo.offsetHeight + 10}px)`;
-            const { xColumn, yColumns, groupBy, seriesOptions, mergeDuplicateData, stacking, legend, showDataLabels, percentage, xAxis, yAxis } = options;
+            const { xColumn, yColumns, groupBy, seriesOptions, mergeDuplicateData, stacking, legend, showDataLabels, percentage, xAxis, yAxis, padding = {} } = options;
             const { key, type, timeFormat } = xColumn;
             let _legend = {
                 show: legend === null || legend === void 0 ? void 0 : legend.show,
@@ -1113,6 +1131,12 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
             // const minInterval = (max - min) / 4;
             // const power = Math.pow(10, Math.floor(Math.log10(minInterval)));
             // const roundedInterval = Math.ceil(minInterval / power) * power;
+            const gridPadding = {
+                top: padding.top || 60,
+                bottom: padding.bottom || 60,
+                left: padding.left || '10%',
+                right: padding.right || '10%'
+            };
             const _chartData = {
                 tooltip: {
                     trigger: 'axis',
@@ -1159,9 +1183,7 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                     }
                 },
                 legend: _legend,
-                grid: {
-                    containLabel: true
-                },
+                grid: Object.assign({ containLabel: true }, gridPadding),
                 xAxis: {
                     type: type,
                     boundaryGap: false,
