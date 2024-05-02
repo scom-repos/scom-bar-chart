@@ -1,4 +1,4 @@
-/// <amd-module name="@scom/scom-bar-chart/global/interfaces.ts" />
+export default `/// <amd-module name="@scom/scom-bar-chart/global/interfaces.ts" />
 declare module "@scom/scom-bar-chart/global/interfaces.ts" {
     import { BigNumber } from "@ijstech/eth-wallet";
     import { ModeType } from "@scom/scom-chart-data-source-setup";
@@ -797,3 +797,4 @@ declare module "@scom/scom-bar-chart" {
         render(): any;
     }
 }
+`;
