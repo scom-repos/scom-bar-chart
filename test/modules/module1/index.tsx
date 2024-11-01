@@ -1,4 +1,5 @@
 import { Module, customModule, Container } from '@ijstech/components';
+import { ModeType } from '@scom/scom-chart-data-source-setup';
 import ScomBarChart from '@scom/scom-bar-chart';
 
 @customModule
@@ -16,6 +17,8 @@ export default class Module1 extends Module {
             <i-scom-bar-chart
                 margin={{ left: 'auto', right: 'auto' }}
                 data={{
+                    dataSource: "Dune",
+                    mode: ModeType.Live,
                     apiEndpoint: "/dune/query/2360815",
                     title: 'ETH Withdrawals after Shanghai Unlock',
                     options: {

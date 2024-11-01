@@ -1,4 +1,3 @@
-import { BigNumber } from "@ijstech/eth-wallet";
 import { ModeType } from "@scom/scom-chart-data-source-setup"
 
 export interface IBarChartOptions {
@@ -59,7 +58,3 @@ export interface IBarChartConfig {
   mode: ModeType
 }
 
-export interface IFormatNumberOptions {
-  precision?: number;
-  roundingMode?: BigNumber.RoundingMode;
-}
