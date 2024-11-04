@@ -1,6 +1,6 @@
 {
     "name": "@scom/scom-bar-chart",
-    "version": "0.1.12",
+    "version": "0.1.13",
     "main": "dist/index.js",
     "plugin": "dist",
     "pluginTypes": "pluginTypes/index.d.ts",
@@ -13,7 +13,7 @@
         "test": "cd test && npm run test && cd .."
     },
     "dependencies": {
-        "@scom/scom-charts": "https://github.com/scom-repos/scom-charts"
+        "@scom/scom-charts": "^0.1.0"
     },
     "devDependencies": {
         "@ijstech/cli": "^0.1.26",
