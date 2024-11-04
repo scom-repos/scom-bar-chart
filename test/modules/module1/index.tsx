@@ -18,7 +18,7 @@ export default class Module1 extends Module {
                 margin={{ left: 'auto', right: 'auto' }}
                 data={{
                     dataSource: "Dune",
-                    mode: ModeType.Live,
+                    mode: ModeType.LIVE,
                     apiEndpoint: "/dune/query/2360815",
                     title: 'ETH Withdrawals after Shanghai Unlock',
                     options: {
