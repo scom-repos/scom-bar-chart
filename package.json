@@ -13,13 +13,11 @@
         "test": "cd test && npm run test && cd .."
     },
     "dependencies": {
-        "@ijstech/eth-contract": "^0.1.24",
-        "@ijstech/eth-wallet": "^0.1.80"
+        "@scom/scom-charts": "https://github.com/scom-repos/scom-charts"
     },
     "devDependencies": {
         "@ijstech/cli": "^0.1.26",
         "@ijstech/compiler": "^0.1.18",
-        "@ijstech/components": "^0.1.29",
-        "@scom/scom-chart-data-source-setup": "^0.1.1"
+        "@ijstech/components": "^0.1.29"
     }
 }

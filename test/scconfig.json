@@ -7,6 +7,7 @@
     }
   },
   "dependencies": {
+    "@scom/scom-charts": "*",
     "@scom/scom-bar-chart": "*"
   },
   "menus": [
