@@ -19,7 +19,7 @@ export default class Module1 extends Module {
                 data={{
                     dataSource: "Dune",
                     mode: ModeType.LIVE,
-                    apiEndpoint: "/dune/query/2360815",
+                    queryId: "2360815",
                     title: 'ETH Withdrawals after Shanghai Unlock',
                     options: {
                         xColumn: {

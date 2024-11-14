@@ -1093,7 +1093,7 @@ declare module "@scom/scom-bar-chart" {
                 };
             };
         };
-        getChartData(): {
+        getChartData(options?: IBarChartOptions): {
             chartData: any;
             defaulBuildertData: IBarChartConfig;
         };
