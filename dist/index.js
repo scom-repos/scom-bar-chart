@@ -1557,8 +1557,9 @@ define("@scom/scom-bar-chart", ["require", "exports", "@ijstech/components", "@s
                 embededSchema: (0, formSchema_1.getEmbedderSchema)(columns)
             };
         }
-        getChartData() {
-            const { options } = this.model.getData();
+        getChartData(options) {
+            if (!options)
+                return;
             const { xColumn, yColumns, groupBy, seriesOptions, mergeDuplicateData, stacking, legend, showDataLabels, percentage, xAxis, yAxis, padding = {} } = options;
             const { key, type, timeFormat } = xColumn;
             let _legend = {

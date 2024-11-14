@@ -63,8 +63,8 @@ export default class ScomBarChart extends ScomCharts<IBarChartOptions> implement
     }
   }
 
-  getChartData() {
-    const { options } = this.model.getData();
+  getChartData(options?: IBarChartOptions) {
+    if (!options) return;
     const { xColumn, yColumns, groupBy, seriesOptions, mergeDuplicateData, stacking, legend, showDataLabels, percentage, xAxis, yAxis, padding = {} } = options;
     const { key, type, timeFormat } = xColumn;
     let _legend = {
